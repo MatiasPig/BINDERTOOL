@@ -52,6 +52,40 @@
   }
   .nav-links button:hover{opacity:0.95;}
   .nav-links button.active{opacity:1; background:rgba(255,255,255,0.15); font-weight:600;}
+  .nav-links button.nav-accent{color:var(--peach);}
+  .nav-links button.nav-accent.active{color:var(--peach);}
+  .godmode-btn{
+    background:none; border:1.5px solid rgba(255,255,255,0.25); color:var(--bg); opacity:0.7;
+    width:38px; height:38px; border-radius:50%; font-size:14px; flex-shrink:0;
+    transition:opacity .2s, background .2s, color .2s;
+  }
+  .godmode-btn:hover{opacity:1; background:rgba(255,255,255,0.1);}
+  .godmode-btn.unlocked{color:var(--peach); border-color:var(--peach); opacity:1;}
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(40,40,40,0.5); z-index:200;
+    align-items:center; justify-content:center;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:var(--bg); border-radius:16px; padding:30px; width:340px; max-width:90vw;
+    box-shadow:0 30px 60px -20px rgba(40,40,40,0.5);
+  }
+  @keyframes shake{
+    0%,100%{transform:translateX(0);} 20%{transform:translateX(-8px);} 40%{transform:translateX(8px);}
+    60%{transform:translateX(-6px);} 80%{transform:translateX(6px);}
+  }
+  .mini-label{font-family:var(--font-mono); font-size:10.5px; opacity:0.5; text-transform:uppercase; letter-spacing:0.06em; display:block; margin-bottom:6px;}
+  input[type="number"], input[type="color"], input[type="text"], textarea{
+    padding:9px 12px; border-radius:8px; border:1.5px solid var(--bg-alt); background:var(--bg); font-family:var(--font-body);
+  }
+  input[type="range"]{accent-color:var(--peach);}
+  .mat-progress-bar{width:100%; height:8px; border-radius:100px; background:var(--bg-alt); overflow:hidden; margin-top:6px;}
+  .mat-progress-fill{height:100%; width:0%; background:var(--peach); transition:width .2s;}
+  .mat-preview-wrap{
+    border-radius:8px; overflow:hidden; box-shadow:0 10px 30px -14px rgba(40,40,40,0.35);
+    background:#fff; padding:8px; width:fit-content; margin:0 auto; box-sizing:border-box;
+  }
+  .mat-preview-wrap canvas{display:block;}
 
   .page{display:none;}
   .page.active{display:block;}
@@ -248,11 +282,12 @@
     flex:1; padding:9px 12px; border-radius:8px; border:1.5px solid var(--bg-alt); background:var(--bg);
     font-family:var(--font-mono); font-size:13px; color:var(--ink); min-width:0;
   }
-  .coloris-presets{display:flex; flex-wrap:wrap; gap:8px;}
+  .coloris-presets{display:flex; flex-wrap:wrap; gap:15px;}
   .coloris-preset-swatch{
     width:24px; height:24px; border-radius:50%; cursor:pointer;
-    box-shadow:inset 0 0 0 1px rgba(40,40,40,0.15); flex-shrink:0;
+    border:2px solid #fff; flex-shrink:0;
   }
+  .coloris-preset-swatch.selected{box-shadow:0 0 0 2px var(--ink);}
   .mini-picker{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; justify-content:center;}
   .theme-btn{flex:1; min-width:0; text-align:center; padding:10px 12px;}
   .mini-btn{
@@ -260,12 +295,12 @@
     font-size:12px; font-weight:600;
   }
   .mini-btn.selected{border-color:var(--ink); background:var(--bg-alt);}
-  .frame-picker-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:18px;}
+  .frame-picker-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:15px; margin-bottom:18px;}
   .frame-swatch-circle{
     width:100%; aspect-ratio:1/1; border-radius:50%; cursor:pointer;
-    box-shadow:inset 0 0 0 1px rgba(40,40,40,0.15); border:2px solid transparent;
+    border:2px solid #fff;
   }
-  .frame-swatch-circle.selected{border-color:var(--ink);}
+  .frame-swatch-circle.selected{box-shadow:0 0 0 2px var(--ink);}
   .edit-tools{display:flex; flex-direction:column; gap:8px; margin-bottom:6px;}
   .edit-btn{
     padding:11px 14px; border-radius:10px; border:1.5px solid var(--bg-alt); background:var(--bg);
@@ -326,6 +361,16 @@
     background:#fff; cursor:grab; max-width:100%; height:auto;
   }
   #editorCanvas:active, #pokeEditorCanvas:active{cursor:grabbing;}
+  #batchPreviewCanvas{
+    box-shadow:0 18px 40px -18px rgba(40,40,40,0.4);
+    border:1px solid var(--bg-alt);
+    background:#fff; max-width:100%; height:auto;
+  }
+  .bg-swatch-row{display:flex; gap:15px; flex-wrap:wrap;}
+  .bg-swatch-row .bg-swatch-circle{
+    width:32px; height:32px; border-radius:50%; cursor:pointer; border:2px solid #fff;
+  }
+  .bg-swatch-row .bg-swatch-circle.selected{box-shadow:0 0 0 2px var(--ink);}
   .editor-hint{font-size:12px; opacity:0.5; font-family:var(--font-mono); text-align:center;}
   .empty-state{opacity:0.45; font-size:13px; text-align:center; max-width:220px;}
 
@@ -385,9 +430,25 @@
   <div class="nav-links">
     <button data-page="michi">Michi Tool</button>
     <button data-page="poke">PokeCards</button>
-    <button data-page="print" id="navPrint" style="display:none;">Print Preview</button>
+    <button data-page="mattool" id="navMatTool" style="display:none;">MATTOOL</button>
+    <button data-page="batchcard" id="navBatchCard" style="display:none;">BatchCard</button>
+    <button data-page="print" id="navPrint" class="nav-accent" style="display:none;">Print Preview</button>
   </div>
+  <button class="godmode-btn" id="godModeBtn" title="God Mode"><i class="fa-solid fa-lock"></i></button>
 </nav>
+
+<div class="modal-overlay" id="godModeModal">
+  <div class="modal-box">
+    <div class="print-preview-title" style="font-size:20px;margin-bottom:6px;">God Mode</div>
+    <p style="font-size:13px;opacity:0.65;margin:0 0 16px;">Enter the password to unlock advanced tools.</p>
+    <input type="password" id="godModePassword" placeholder="Password" style="width:100%;padding:11px 14px;border-radius:8px;border:1.5px solid var(--bg-alt);background:var(--bg);font-family:var(--font-body);margin-bottom:8px;">
+    <div id="godModeError" style="color:#c95b4e; font-size:12.5px; min-height:18px; margin-bottom:10px;"></div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-primary" id="godModeSubmit" style="flex:1;justify-content:center;">Unlock</button>
+      <button class="btn btn-outline" id="godModeCancel" style="flex:1;justify-content:center;">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <!-- ============ HOME ============ -->
 <main class="page active" id="page-home">
@@ -620,6 +681,171 @@
   </div>
 </main>
 
+<!-- ============ MATTOOL (God Mode) ============ -->
+<main class="page" id="page-mattool">
+  <div class="app-header">
+    <div class="app-title">MATTOOL</div>
+    <div class="app-controls">
+      <button class="btn btn-primary" id="matCounter" style="cursor:default;pointer-events:none;">0 pokémon</button>
+      <button class="btn btn-primary" id="matExportBtn"><i class="fa-solid fa-download"></i> Export PNG</button>
+    </div>
+  </div>
+  <div class="columns" style="grid-template-columns:400px 1fr;">
+    <div class="col">
+      <div class="col-title" style="margin-top:0;">Selection</div>
+      <div class="mini-picker" id="matModePicker" style="margin-bottom:14px;"></div>
+      <div id="matModeGeneration">
+        <select id="matGenSelect" style="width:100%;margin-bottom:14px;">
+          <option value="1">Generation I (Kanto)</option>
+          <option value="2">Generation II (Johto)</option>
+          <option value="3">Generation III (Hoenn)</option>
+          <option value="4">Generation IV (Sinnoh)</option>
+          <option value="5">Generation V (Unova)</option>
+          <option value="6">Generation VI (Kalos)</option>
+          <option value="7">Generation VII (Alola)</option>
+          <option value="8">Generation VIII (Galar)</option>
+          <option value="9">Generation IX (Paldea)</option>
+        </select>
+      </div>
+      <div id="matModeType" style="display:none;">
+        <select id="matTypeSelect" style="width:100%;margin-bottom:14px;"></select>
+      </div>
+      <div id="matModeManual" style="display:none;">
+        <input type="text" id="matManualSearch" placeholder="Search Pokémon by name..." style="width:100%;margin-bottom:8px;">
+        <div class="suggestions" id="matManualSuggestions"></div>
+        <div class="card-list" id="matManualList" style="max-height:220px;overflow-y:auto;margin-bottom:10px;"></div>
+        <button class="btn btn-outline" id="matManualClear" style="width:100%;justify-content:center;margin-bottom:20px;">Clear all</button>
+      </div>
+      <button class="btn btn-primary" id="matFetchBtn" style="width:100%;justify-content:center;margin-bottom:20px;"><i class="fa-solid fa-magnifying-glass"></i> Load selection</button>
+
+      <div class="col-title">Canvas</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div>
+          <label class="mini-label">Width (mm)</label>
+          <input type="number" id="matWidth" value="900" style="width:100%;">
+        </div>
+        <div>
+          <label class="mini-label">Height (mm)</label>
+          <input type="number" id="matHeight" value="400" style="width:100%;">
+        </div>
+      </div>
+      <label class="mini-label">Safe margin (mm)</label>
+      <input type="number" id="matMargin" value="15" style="width:100%;margin-bottom:16px;">
+      <label class="mini-label">Resolution</label>
+      <select id="matDpi" style="width:100%;margin-bottom:16px;">
+        <option value="300">300 dpi</option><option value="600">600 dpi</option>
+      </select>
+
+      <div class="col-title">Image style</div>
+      <div class="mini-picker" id="matStylePicker" style="margin-bottom:16px;"></div>
+
+      <div class="col-title">Background</div>
+      <div class="toggle-row" style="margin-bottom:12px;">
+        <span class="toggle-label">Transparent</span>
+        <button class="switch" id="matBgTransparent" role="switch" aria-checked="false"><span class="switch-knob"></span></button>
+      </div>
+      <div id="matBgColorRow" style="margin-bottom:16px;"></div>
+
+      <div class="col-title">Grid adjustments</div>
+      <label class="mini-label">Pokémon size (%)</label>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
+        <input type="range" id="matPokeSize" min="10" max="100" value="90" style="flex:1;">
+        <input type="number" id="matPokeSizeNum" min="10" max="100" value="90" style="width:60px;">
+      </div>
+
+      <div class="col-title">Icon style</div>
+      <div class="toggle-row" style="margin-bottom:12px;">
+        <span class="toggle-label">Shadow</span>
+        <button class="switch on" id="matShadowToggle" role="switch" aria-checked="true"><span class="switch-knob"></span></button>
+      </div>
+      <label class="mini-label">Outline</label>
+      <div class="frame-picker-grid" id="matOutlinePicker" style="margin-bottom:16px;"></div>
+
+      <div class="col-title">Custom logo</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-outline" id="matInfoTagSvgBtn" style="flex:1;justify-content:center;"><i class="fa-solid fa-image"></i> Add logo</button>
+        <button class="icon-btn" id="matInfoTagSvgClear" style="flex:0 0 44px;" title="Remove logo"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <input type="file" id="matInfoTagSvgInput" accept=".svg,image/svg+xml,image/png,.png" style="display:none;">
+    </div>
+    <div class="col">
+      <div id="matLoadingBox" style="display:none;margin-bottom:16px;">
+        <div class="upscale-caption" id="matLoadingText">Loading images…</div>
+        <div class="mat-progress-bar"><div class="mat-progress-fill" id="matProgressFill"></div></div>
+      </div>
+      <div class="col-title" style="margin-top:0;">Preview</div>
+      <div class="upscale-caption" id="matGridInfo" style="margin-bottom:14px;">Load a selection to see the grid preview.</div>
+      <div class="mat-preview-wrap" id="matPreviewWrap">
+        <canvas id="matPreviewCanvas" width="1" height="1"></canvas>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ============ BATCHCARD (God Mode) ============ -->
+<main class="page" id="page-batchcard">
+  <div class="app-header">
+    <div class="app-title">BATCHCARD</div>
+    <div class="app-controls">
+      <span class="counter" id="batchCounter">0 pokémon</span>
+    </div>
+  </div>
+  <div class="columns" style="grid-template-columns:25% 75%;">
+    <div class="col">
+      <div class="col-title" style="margin-top:0;">Selection</div>
+      <div class="mini-picker" id="batchModePicker" style="margin-bottom:14px;"></div>
+      <div id="batchModeGeneration">
+        <select id="batchGenSelect" style="width:100%;margin-bottom:14px;">
+          <option value="1">Generation I (Kanto)</option>
+          <option value="2">Generation II (Johto)</option>
+          <option value="3">Generation III (Hoenn)</option>
+          <option value="4">Generation IV (Sinnoh)</option>
+          <option value="5">Generation V (Unova)</option>
+          <option value="6">Generation VI (Kalos)</option>
+          <option value="7">Generation VII (Alola)</option>
+          <option value="8">Generation VIII (Galar)</option>
+          <option value="9">Generation IX (Paldea)</option>
+        </select>
+      </div>
+      <div id="batchModeType" style="display:none;">
+        <select id="batchTypeSelect" style="width:100%;margin-bottom:14px;"></select>
+      </div>
+      <button class="btn btn-primary" id="batchLoadBtn" style="width:100%;justify-content:center;margin-bottom:20px;"><i class="fa-solid fa-magnifying-glass"></i> Load selection &amp; preview</button>
+
+      <div class="col-title">Card image</div>
+      <div class="mini-picker" id="batchStylePicker" style="margin-bottom:16px;"></div>
+
+      <div class="col-title">Card theme</div>
+      <div class="mini-picker" id="batchThemePicker" style="margin-bottom:16px;"></div>
+
+      <div class="col-title">Card frame</div>
+      <div class="frame-picker-grid" id="batchFramePicker" style="margin-bottom:16px;"></div>
+
+      <div class="col-title">Background</div>
+      <div class="bg-swatch-row" id="batchBgSwatches" style="margin-bottom:16px;"></div>
+
+      <div class="col-title">Export</div>
+      <button class="btn btn-primary" id="batchGenerateBtn" style="width:100%;justify-content:center;" disabled><i class="fa-solid fa-download"></i> Export PNG (.zip)</button>
+      <div id="batchProgressBox" style="display:none;margin-top:14px;">
+        <div class="upscale-caption" id="batchProgressText">Generating…</div>
+        <div class="mat-progress-bar"><div class="mat-progress-fill" id="batchProgressFill"></div></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="col-title" style="margin-top:0;">Format preview</div>
+      <div class="upscale-caption" style="margin-bottom:18px;">Only this one card is rendered to set the format — the rest are generated straight to your download, no need to preview all of them.</div>
+      <div class="sheet-nav" style="margin-bottom:10px;">
+        <button onclick="changeBatchPreview(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="sheet-page-label" id="batchPreviewLabel">Preview</span>
+        <button onclick="changeBatchPreview(1)"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+      <div class="editor-wrap" style="height:auto;">
+        <canvas id="batchPreviewCanvas" width="1" height="1"></canvas>
+      </div>
+    </div>
+  </div>
+</main>
+
 <script>
 /* ================= CONFIG ================= */
 const TYPE_ICON_DATA={
@@ -777,8 +1003,43 @@ function showPage(name){
   if(name==='michi' && typeof drawEditor==='function'){ drawEditor(); renderSheet('michi'); }
   if(name==='poke' && typeof refreshPoke==='function') refreshPoke();
   if(name==='print' && typeof renderSheet==='function') renderSheet('all');
+  if(name==='mattool' && typeof drawMatPreview==='function') drawMatPreview();
+  if(name==='batchcard' && typeof drawBatchPreview==='function') drawBatchPreview();
 }
 document.querySelectorAll('.nav-links button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+
+/* ================= GOD MODE ================= */
+const GODMODE_PASSWORD='@Juli2026';
+let godMode=false;
+function openGodModeModal(){
+  if(godMode) return;
+  document.getElementById('godModeModal').classList.add('open');
+  document.getElementById('godModePassword').value='';
+  document.getElementById('godModeError').textContent='';
+  document.getElementById('godModePassword').focus();
+}
+function closeGodModeModal(){ document.getElementById('godModeModal').classList.remove('open'); }
+function tryUnlockGodMode(){
+  const val=document.getElementById('godModePassword').value;
+  if(val===GODMODE_PASSWORD){
+    godMode=true;
+    document.getElementById('godModeBtn').classList.add('unlocked');
+    document.getElementById('godModeBtn').innerHTML='<i class="fa-solid fa-lock-open"></i>';
+    document.getElementById('navMatTool').style.display='';
+    document.getElementById('navBatchCard').style.display='';
+    closeGodModeModal();
+  } else {
+    document.getElementById('godModeError').textContent='Incorrect password.';
+    const box=document.querySelector('#godModeModal .modal-box');
+    box.style.animation='none'; void box.offsetWidth; box.style.animation='shake .35s';
+  }
+}
+document.getElementById('godModeBtn').addEventListener('click',openGodModeModal);
+document.getElementById('godModeCancel').addEventListener('click',closeGodModeModal);
+document.getElementById('godModeSubmit').addEventListener('click',tryUnlockGodMode);
+document.getElementById('godModePassword').addEventListener('keydown',e=>{ if(e.key==='Enter') tryUnlockGodMode(); });
+document.getElementById('godModeModal').addEventListener('click',e=>{ if(e.target.id==='godModeModal') closeGodModeModal(); });
+
 
 /* ================= HOME: BINDER GRID ================= */
 const PRESETS = [
@@ -829,6 +1090,7 @@ function renderBinder(){
 function shuffleBinder(){ renderBinder(); }
 renderBinder();
 window.addEventListener('resize', ()=>{ if(document.getElementById('page-home').classList.contains('active')) renderBinder(); });
+window.addEventListener('resize', ()=>{ if(document.getElementById('page-mattool').classList.contains('active') && typeof drawMatPreview==='function') drawMatPreview(); });
 setInterval(()=>{ if(document.getElementById('page-home').classList.contains('active')) renderBinder(); },5000);
 
 /* ================= GEOMETRY HELPERS ================= */
@@ -1499,27 +1761,26 @@ function flipSelected(){
   }, false);
 }
 function applySharpen(ctx,w,h){
-  const imgData=ctx.getImageData(0,0,w,h);
-  const src=imgData.data;
+  const original=ctx.getImageData(0,0,w,h);
+  const src=original.data;
+  const blurCanvas=document.createElement('canvas');
+  blurCanvas.width=w; blurCanvas.height=h;
+  const bctx=blurCanvas.getContext('2d');
+  bctx.filter='blur(1.1px)';
+  bctx.drawImage(ctx.canvas,0,0,w,h);
+  const blur=bctx.getImageData(0,0,w,h).data;
   const out=new Uint8ClampedArray(src.length);
-  const k=[0,-0.4,0, -0.4,2.6,-0.4, 0,-0.4,0];
-  for(let y=0;y<h;y++){
-    const yUp=y>0?y-1:0, yDown=y<h-1?y+1:h-1;
-    for(let x=0;x<w;x++){
-      const xLeft=x>0?x-1:0, xRight=x<w-1?x+1:w-1;
-      const idx=(y*w+x)*4;
-      for(let c=0;c<3;c++){
-        const sum=
-          src[(yUp*w+xLeft)*4+c]*k[0] + src[(yUp*w+x)*4+c]*k[1] + src[(yUp*w+xRight)*4+c]*k[2] +
-          src[(y*w+xLeft)*4+c]*k[3]   + src[(y*w+x)*4+c]*k[4]   + src[(y*w+xRight)*4+c]*k[5] +
-          src[(yDown*w+xLeft)*4+c]*k[6]+ src[(yDown*w+x)*4+c]*k[7]+ src[(yDown*w+xRight)*4+c]*k[8];
-        out[idx+c]=sum;
-      }
-      out[idx+3]=src[idx+3];
+  const denoiseMix=0.18; // slight blend toward the blur to soften sensor/compression noise
+  const sharpenAmount=0.9; // strength of the edge boost added back on top
+  for(let i=0;i<src.length;i+=4){
+    for(let c=0;c<3;c++){
+      const denoised=src[i+c]*(1-denoiseMix)+blur[i+c]*denoiseMix;
+      const highFreq=src[i+c]-blur[i+c];
+      out[i+c]=denoised+highFreq*sharpenAmount;
     }
+    out[i+3]=src[i+3];
   }
-  imgData.data.set(out);
-  ctx.putImageData(imgData,0,0);
+  ctx.putImageData(new ImageData(out,w,h),0,0);
 }
 function upscaleSelected(){
   const card=getMichiSelected(); if(!card||!card.image) return;
@@ -1791,9 +2052,12 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM){
       card._spriteImg.src=d.sprite;
     }
     if(card._spriteImg.complete && card._spriteImg.naturalWidth){
-      const sz=w*0.66;
+      const baseSz=w*0.66;
+      const sz = card.pixelArt ? baseSz*1.25 : baseSz;
       const imgY=oy+h*0.125;
+      ctx.imageSmoothingEnabled = !card.pixelArt;
       ctx.drawImage(card._spriteImg, ox+(w-sz)/2, imgY, sz, sz);
+      ctx.imageSmoothingEnabled = true;
       imgBottom=imgY+sz;
     }
   }
@@ -2147,6 +2411,625 @@ async function exportZIP(scope){
   a.download=buildFilename(list.length,'zip');
   a.click();
 }
+
+/* ================= MATTOOL (God Mode) ================= */
+const ALL_TYPES=['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+const VARIANT_SUFFIXES=['-mega','-gmax','-alola','-galar','-hisui','-paldea','-primal','-therian','-origin','-incarnate',
+  '-crowned','-eternamax','-zen','-standard','-blade','-shield','-sunny','-rainy','-snowy','-plant','-sandy','-trash',
+  '-heat','-wash','-frost','-fan','-mow','-resolute','-pirouette','-aria','-busted','-disguised','-dusk','-dawn',
+  '-ultra','-school','-solo','-complete','-hangry','-noice','-gulping','-gorging','-low-key','-amped','-totem','-cap',
+  '-starter','-eternal','-power-construct','-battle-bond','-ash','-original','-gulpin','-noash'];
+function isDefaultFormName(name){ return !VARIANT_SUFFIXES.some(suf=>name.endsWith(suf)); }
+function matSpriteUrl(id, style){
+  return style==='pixel'
+    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
+    : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+}
+async function fetchGenerationList(gen){
+  const res=await fetch(`https://pokeapi.co/api/v2/generation/${gen}`);
+  const data=await res.json();
+  const list=data.pokemon_species.map(s=>{
+    const m=s.url.match(/\/(\d+)\/$/);
+    return {id:parseInt(m[1]), name:s.name};
+  });
+  list.sort((a,b)=>a.id-b.id);
+  return list;
+}
+async function fetchTypeList(type){
+  const res=await fetch(`https://pokeapi.co/api/v2/type/${type}`);
+  const data=await res.json();
+  const list=data.pokemon.map(p=>{
+    const m=p.pokemon.url.match(/\/(\d+)\/$/);
+    return {id:parseInt(m[1]), name:p.pokemon.name};
+  }).filter(p=>p.id<10000 && isDefaultFormName(p.name));
+  list.sort((a,b)=>a.id-b.id);
+  return list;
+}
+function matComputeGrid(count, availW, availH, spacingPx, swap){
+  if(swap){ const t=availW; availW=availH; availH=t; }
+  let best=null;
+  for(let rows=1; rows<=count; rows++){
+    const cols=Math.ceil(count/rows);
+    const cellW=(availW-(cols-1)*spacingPx)/cols;
+    const cellH=(availH-(rows-1)*spacingPx)/rows;
+    if(cellW<=0||cellH<=0) continue;
+    const squareness=Math.min(cellW,cellH)/Math.max(cellW,cellH);
+    const empty=rows*cols-count;
+    if(!best || squareness>best.squareness+0.002 || (Math.abs(squareness-best.squareness)<=0.002 && empty<best.empty)){
+      best={rows,cols,cellW,cellH,squareness,empty};
+    }
+  }
+  if(swap && best){
+    const r=best.rows; best.rows=best.cols; best.cols=r;
+    const w=best.cellW; best.cellW=best.cellH; best.cellH=w;
+  }
+  return best;
+}
+
+let matMode='generation', matStyle='official', matPokemonList=[], matImages={}, matManualSelected=[];
+let matBgColor='#ffffff';
+function buildMatBgPicker(){
+  const wrap=document.getElementById('matBgColorRow');
+  wrap.innerHTML='';
+  const picker=createColorPicker(matBgColor, BG_PRESETS, (hex)=>{ matBgColor=hex; drawMatPreview(); });
+  wrap.appendChild(picker);
+}
+buildMatBgPicker();
+function buildMatModePicker(){
+  const el=document.getElementById('matModePicker'); el.innerHTML='';
+  [{id:'generation',label:'Generation'},{id:'type',label:'Type'},{id:'manual',label:'Manual'}].forEach(m=>{
+    const b=document.createElement('button');
+    b.className='mini-btn theme-btn'+(m.id===matMode?' selected':'');
+    b.textContent=m.label;
+    b.onclick=()=>{ matMode=m.id; buildMatModePicker();
+      document.getElementById('matModeGeneration').style.display=m.id==='generation'?'block':'none';
+      document.getElementById('matModeType').style.display=m.id==='type'?'block':'none';
+      document.getElementById('matModeManual').style.display=m.id==='manual'?'block':'none';
+    };
+    el.appendChild(b);
+  });
+}
+function buildMatStylePicker(){
+  const el=document.getElementById('matStylePicker'); el.innerHTML='';
+  [{id:'official',label:'Official art'},{id:'pixel',label:'Pixel art'}].forEach(s=>{
+    const b=document.createElement('button');
+    b.className='mini-btn theme-btn'+(s.id===matStyle?' selected':'');
+    b.textContent=s.label;
+    b.onclick=()=>{ matStyle=s.id; buildMatStylePicker(); if(matPokemonList.length) loadMatImagesAndDraw(); };
+    el.appendChild(b);
+  });
+}
+document.getElementById('matTypeSelect').innerHTML=ALL_TYPES.map(t=>`<option value="${t}">${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('');
+document.getElementById('matBgTransparent').addEventListener('click',function(){
+  const on=!this.classList.contains('on');
+  this.classList.toggle('on',on); this.setAttribute('aria-checked',on);
+  document.getElementById('matBgColorRow').style.display=on?'none':'block';
+  drawMatPreview();
+});
+
+let matNameCache=null;
+async function ensureMatNameCache(){
+  if(matNameCache) return matNameCache;
+  try{
+    const res=await fetch('https://pokeapi.co/api/v2/pokemon?limit=1302');
+    const data=await res.json();
+    matNameCache=data.results.map(r=>{ const m=r.url.match(/\/(\d+)\/$/); return {id:parseInt(m[1]), name:r.name}; });
+  }catch(e){ matNameCache=[]; }
+  return matNameCache;
+}
+document.getElementById('matManualSearch').addEventListener('input', async e=>{
+  const q=e.target.value.trim().toLowerCase();
+  const box=document.getElementById('matManualSuggestions');
+  box.innerHTML='';
+  if(!q) return;
+  const cache=await ensureMatNameCache();
+  const matches=cache.filter(p=>p.name.includes(q)).slice(0,8);
+  matches.forEach(p=>{
+    const b=document.createElement('button');
+    b.textContent=`#${p.id} ${p.name}`;
+    b.onclick=()=>{
+      if(!matManualSelected.some(x=>x.id===p.id)){ matManualSelected.push(p); renderMatManualList(); }
+      e.target.value=''; box.innerHTML='';
+    };
+    box.appendChild(b);
+  });
+});
+function renderMatManualList(){
+  const el=document.getElementById('matManualList'); el.innerHTML='';
+  matManualSelected.forEach(p=>{
+    const item=document.createElement('div'); item.className='card-item';
+    const meta=document.createElement('div'); meta.className='meta'; meta.textContent=`#${p.id} ${p.name}`;
+    const rm=document.createElement('button'); rm.className='remove'; rm.innerHTML='<i class="fa-solid fa-xmark"></i>';
+    rm.onclick=()=>{ matManualSelected=matManualSelected.filter(x=>x.id!==p.id); renderMatManualList(); };
+    item.appendChild(meta); item.appendChild(rm);
+    el.appendChild(item);
+  });
+}
+document.getElementById('matManualClear').addEventListener('click',()=>{ matManualSelected=[]; renderMatManualList(); });
+
+async function matLoadSelection(){
+  const btn=document.getElementById('matFetchBtn');
+  btn.disabled=true;
+  try{
+    if(matMode==='generation'){
+      matPokemonList=await fetchGenerationList(document.getElementById('matGenSelect').value);
+    } else if(matMode==='type'){
+      matPokemonList=await fetchTypeList(document.getElementById('matTypeSelect').value);
+    } else {
+      matPokemonList=matManualSelected.slice().sort((a,b)=>a.id-b.id);
+    }
+  }catch(e){
+    alert('Could not load that selection from PokeAPI. Please try again.');
+    matPokemonList=[];
+  }
+  btn.disabled=false;
+  document.getElementById('matCounter').textContent=`${matPokemonList.length} pokémon`;
+  await loadMatImagesAndDraw();
+}
+async function loadMatImagesAndDraw(){
+  if(!matPokemonList.length){ drawMatPreview(); return; }
+  matImages={};
+  const total=matPokemonList.length;
+  let loaded=0, failed=[];
+  const box=document.getElementById('matLoadingBox');
+  const fill=document.getElementById('matProgressFill');
+  const text=document.getElementById('matLoadingText');
+  box.style.display='block';
+  function updateUI(){
+    fill.style.width=Math.round(loaded/total*100)+'%';
+    text.textContent=`Loading images… ${loaded} / ${total}` + (failed.length? ` (${failed.length} failed)`:'');
+  }
+  updateUI();
+  let idx=0;
+  async function worker(){
+    while(idx<matPokemonList.length){
+      const item=matPokemonList[idx++];
+      await new Promise(resolve=>{
+        const img=new Image(); img.crossOrigin='anonymous';
+        img.onload=()=>{ matImages[item.id]=img; loaded++; updateUI(); resolve(); };
+        img.onerror=()=>{ matImages[item.id]=null; loaded++; failed.push(item); updateUI(); resolve(); };
+        img.src=matSpriteUrl(item.id, matStyle);
+      });
+    }
+  }
+  await Promise.all(Array.from({length:Math.min(14,matPokemonList.length)},worker));
+  text.textContent=`Loaded ${total-failed.length} / ${total}`+(failed.length?` — ${failed.length} couldn't be loaded.`:'.');
+  drawMatPreview();
+}
+document.getElementById('matFetchBtn').addEventListener('click',matLoadSelection);
+document.getElementById('matPokeSize').addEventListener('input',function(){
+  document.getElementById('matPokeSizeNum').value=this.value;
+  drawMatPreview();
+});
+document.getElementById('matPokeSizeNum').addEventListener('input',function(){
+  let v=Math.max(10,Math.min(100,Number(this.value)||90));
+  document.getElementById('matPokeSize').value=v;
+  drawMatPreview();
+});
+['matWidth','matHeight','matMargin','matDpi'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',drawMatPreview);
+});
+document.getElementById('matShadowToggle').addEventListener('click',function(){
+  const on=!this.classList.contains('on');
+  this.classList.toggle('on',on); this.setAttribute('aria-checked',on);
+  drawMatPreview();
+});
+let matOutlineColor=null;
+function buildMatOutlinePicker(){
+  const el=document.getElementById('matOutlinePicker'); el.innerHTML='';
+  [{id:null,label:'No outline',css:FRAME_SWATCH_CSS['none']},{id:'#e6e6e6',label:'#e6e6e6',css:'#e6e6e6'},{id:'#151515',label:'Black V',css:'#151515'}].forEach(o=>{
+    const b=document.createElement('div');
+    b.className='frame-swatch-circle'+(matOutlineColor===o.id?' selected':'');
+    b.style.background=o.css;
+    b.title=o.label;
+    b.onclick=()=>{ matOutlineColor=o.id; buildMatOutlinePicker(); drawMatPreview(); };
+    el.appendChild(b);
+  });
+}
+buildMatOutlinePicker();
+
+let matInfoTagSvgImg=null;
+document.getElementById('matInfoTagSvgBtn').addEventListener('click',()=>document.getElementById('matInfoTagSvgInput').click());
+document.getElementById('matInfoTagSvgInput').addEventListener('change',e=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  const img=new Image();
+  img.onload=()=>{ matInfoTagSvgImg=img; drawMatPreview(); };
+  img.src=URL.createObjectURL(file);
+  e.target.value='';
+});
+document.getElementById('matInfoTagSvgClear').addEventListener('click',()=>{ matInfoTagSvgImg=null; drawMatPreview(); });
+
+function buildOutlinedImage(img,dw,dh,outlineColor,outlineWidth,smoothing){
+  const pad = outlineColor ? Math.ceil(outlineWidth) : 0;
+  const w=Math.max(1,Math.ceil(dw)), h=Math.max(1,Math.ceil(dh));
+  const canvas=document.createElement('canvas');
+  canvas.width=w+pad*2; canvas.height=h+pad*2;
+  const cctx=canvas.getContext('2d');
+  cctx.imageSmoothingEnabled=smoothing;
+  if(outlineColor && outlineWidth>0){
+    const silCanvas=document.createElement('canvas');
+    silCanvas.width=w; silCanvas.height=h;
+    const sctx=silCanvas.getContext('2d');
+    sctx.imageSmoothingEnabled=smoothing;
+    sctx.drawImage(img,0,0,w,h);
+    sctx.globalCompositeOperation='source-in';
+    sctx.fillStyle=outlineColor;
+    sctx.fillRect(0,0,w,h);
+    const steps=8;
+    for(let a=0;a<steps;a++){
+      const ang=(a/steps)*Math.PI*2;
+      const ox=Math.cos(ang)*outlineWidth, oy=Math.sin(ang)*outlineWidth;
+      cctx.drawImage(silCanvas, pad+ox, pad+oy, w, h);
+    }
+  }
+  cctx.drawImage(img, pad, pad, w, h);
+  return {canvas, pad};
+}
+function drawInfoTag(ctx,x,y,w,h,pxPerMM,tagCells){
+  const pad=5*pxPerMM;
+  const ix=x+pad, iy=y+pad, iw=Math.max(1,w-2*pad), ih=Math.max(1,h-2*pad);
+  ctx.save();
+  ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
+
+  const hasSvg = matInfoTagSvgImg && matInfoTagSvgImg.complete && matInfoTagSvgImg.naturalWidth;
+  if(hasSvg){
+    const ratio=Math.min(iw/matInfoTagSvgImg.naturalWidth, ih/matInfoTagSvgImg.naturalHeight);
+    const sw=matInfoTagSvgImg.naturalWidth*ratio, sh=matInfoTagSvgImg.naturalHeight*ratio;
+    const logoX = tagCells>1 ? (ix+iw-sw) : (ix+(iw-sw)/2);
+    const logoY = iy+(ih-sh)/2;
+    ctx.drawImage(matInfoTagSvgImg, logoX, logoY, sw, sh);
+  }
+  ctx.restore();
+}
+
+function renderMatCanvas(canvas, pxPerMM, showGuides){
+  const widthMM=Number(document.getElementById('matWidth').value)||900;
+  const heightMM=Number(document.getElementById('matHeight').value)||400;
+  const marginMM=Number(document.getElementById('matMargin').value)||0;
+  const spacingMM=4;
+  const pokeSizePct=Number(document.getElementById('matPokeSize').value)/100||0.9;
+  const shadowOn=document.getElementById('matShadowToggle').classList.contains('on');
+  const transparent=document.getElementById('matBgTransparent').classList.contains('on');
+  const bgColor=matBgColor;
+
+  const fullW=Math.max(1,Math.round(widthMM*pxPerMM)), fullH=Math.max(1,Math.round(heightMM*pxPerMM));
+  canvas.width=fullW; canvas.height=fullH;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,fullW,fullH);
+  if(!transparent){ ctx.fillStyle=bgColor; ctx.fillRect(0,0,fullW,fullH); }
+
+  const marginPx=marginMM*pxPerMM, spacingPx=spacingMM*pxPerMM;
+  const availW=fullW-2*marginPx, availH=fullH-2*marginPx;
+  const count=matPokemonList.length;
+  const hasLogo=matInfoTagSvgImg && matInfoTagSvgImg.complete && matInfoTagSvgImg.naturalWidth;
+  const tagCells=hasLogo?1:0;
+  const effectiveCount=count+tagCells;
+  let gridInfoText='Load a selection to see the grid preview.';
+  if(effectiveCount>0 && availW>0 && availH>0){
+    const grid=matComputeGrid(effectiveCount, availW, availH, spacingPx, false);
+    if(grid){
+      const gridW=grid.cols*grid.cellW+(grid.cols-1)*spacingPx;
+      const gridH=grid.rows*grid.cellH+(grid.rows-1)*spacingPx;
+      const offsetX=marginPx+(availW-gridW)/2, offsetY=marginPx+(availH-gridH)/2;
+      matPokemonList.forEach((p,i)=>{
+        const row=Math.floor(i/grid.cols), col=i%grid.cols;
+        const cx=offsetX+col*(grid.cellW+spacingPx), cy=offsetY+row*(grid.cellH+spacingPx);
+        const innerW=Math.max(1,grid.cellW*pokeSizePct), innerH=Math.max(1,grid.cellH*pokeSizePct);
+        const img=matImages[p.id];
+        if(img){
+          ctx.imageSmoothingEnabled = matStyle!=='pixel';
+          const ratio=Math.min(innerW/img.naturalWidth, innerH/img.naturalHeight);
+          const dw=img.naturalWidth*ratio, dh=img.naturalHeight*ratio;
+          const dx=cx+(grid.cellW-dw)/2, dy=cy+(grid.cellH-dh)/2;
+          const outlineW=matOutlineColor?Math.max(1, Math.min(dw,dh)*0.015):0;
+          const {canvas:outlinedCanvas, pad:outlinedPad}=buildOutlinedImage(img,dw,dh,matOutlineColor,outlineW,matStyle!=='pixel');
+          ctx.save();
+          if(shadowOn){
+            const shadowOff=Math.max(1, Math.min(innerW,innerH)*0.045);
+            ctx.shadowColor='rgba(0,0,0,0.2)';
+            ctx.shadowOffsetX=shadowOff; ctx.shadowOffsetY=shadowOff; ctx.shadowBlur=0;
+          }
+          ctx.drawImage(outlinedCanvas, dx-outlinedPad, dy-outlinedPad);
+          ctx.restore();
+          ctx.imageSmoothingEnabled=true;
+        }
+      });
+      if(tagCells>0){
+        const totalSlots=grid.rows*grid.cols;
+        const startIdx=totalSlots-tagCells, endIdx=totalSlots-1;
+        const startRow=Math.floor(startIdx/grid.cols), startCol=startIdx%grid.cols;
+        const endRow=Math.floor(endIdx/grid.cols), endCol=endIdx%grid.cols;
+        if(startRow===endRow){
+          const tx=offsetX+startCol*(grid.cellW+spacingPx);
+          const ty=offsetY+startRow*(grid.cellH+spacingPx);
+          const tw=(endCol-startCol+1)*grid.cellW+(endCol-startCol)*spacingPx;
+          drawInfoTag(ctx,tx,ty,tw,grid.cellH,pxPerMM,tagCells);
+        } else {
+          const tx=offsetX+startCol*(grid.cellW+spacingPx);
+          const ty=offsetY+startRow*(grid.cellH+spacingPx);
+          drawInfoTag(ctx,tx,ty,grid.cellW,grid.cellH,pxPerMM,tagCells);
+        }
+      }
+      gridInfoText=`${grid.rows} rows × ${grid.cols} columns — ${count} pokémon, cell ≈ ${(grid.cellW/pxPerMM).toFixed(1)}×${(grid.cellH/pxPerMM).toFixed(1)}mm`;
+      if(showGuides){
+        ctx.save();
+        ctx.strokeStyle='rgba(74,70,66,0.4)'; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+        for(let c=1;c<grid.cols;c++){
+          const x=offsetX+c*(grid.cellW+spacingPx)-spacingPx/2;
+          ctx.beginPath(); ctx.moveTo(x,offsetY); ctx.lineTo(x,offsetY+gridH); ctx.stroke();
+        }
+        for(let r=1;r<grid.rows;r++){
+          const y=offsetY+r*(grid.cellH+spacingPx)-spacingPx/2;
+          ctx.beginPath(); ctx.moveTo(offsetX,y); ctx.lineTo(offsetX+gridW,y); ctx.stroke();
+        }
+        ctx.strokeRect(offsetX,offsetY,gridW,gridH);
+        ctx.restore();
+      }
+    }
+    if(showGuides){
+      ctx.save();
+      ctx.strokeStyle='rgba(201,107,60,0.65)'; ctx.setLineDash([6,4]); ctx.lineWidth=1;
+      ctx.strokeRect(marginPx,marginPx,availW,availH);
+      ctx.restore();
+    }
+  } else if(showGuides){
+    drawEmptyCardPlaceholder(ctx,0,0,fullW,fullH,'Load a Pokémon selection to preview the grid');
+  }
+  document.getElementById('matGridInfo').textContent=gridInfoText;
+}
+function drawMatPreview(){
+  const canvas=document.getElementById('matPreviewCanvas');
+  const wrap=document.getElementById('matPreviewWrap');
+  const dpi=Number(document.getElementById('matDpi').value)||300;
+  const widthMM=Number(document.getElementById('matWidth').value)||900;
+  const heightMM=Number(document.getElementById('matHeight').value)||400;
+  const fullPxPerMM=dpi/25.4;
+
+  const col=wrap.closest('.col');
+  const colStyle=getComputedStyle(col);
+  const colPadX=parseFloat(colStyle.paddingLeft)+parseFloat(colStyle.paddingRight);
+  const wrapPad=16; // matches .mat-preview-wrap padding (8px each side)
+  const availW=Math.max(100, col.clientWidth-colPadX-wrapPad);
+
+  const colRect=col.getBoundingClientRect();
+  const wrapTop=wrap.getBoundingClientRect().top;
+  const availH=Math.max(100, colRect.bottom-wrapTop-wrapPad-16);
+
+  const pxPerMM=Math.min(fullPxPerMM, availW/widthMM, availH/heightMM);
+  renderMatCanvas(canvas, pxPerMM, true);
+  canvas.style.width=(widthMM*pxPerMM)+'px';
+  canvas.style.height=(heightMM*pxPerMM)+'px';
+}
+document.getElementById('matExportBtn').addEventListener('click',()=>{
+  if(!matPokemonList.length){ alert('Load a selection first.'); return; }
+  const dpi=Number(document.getElementById('matDpi').value)||300;
+  const pxPerMM=dpi/25.4;
+  const canvas=document.createElement('canvas');
+  renderMatCanvas(canvas, pxPerMM, false);
+  canvas.toBlob(blob=>{
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`MATTOOL_${todayStr()}_${matPokemonList.length}pokemon.png`;
+    a.click();
+  },'image/png');
+});
+buildMatModePicker();
+buildMatStylePicker();
+drawMatPreview();
+
+/* ================= BATCHCARD (God Mode) ================= */
+let batchMode='generation', batchStyle='official', batchTheme='light', batchFrame='none', batchList=[], batchBgOverride=null;
+function buildBatchModePicker(){
+  const el=document.getElementById('batchModePicker'); el.innerHTML='';
+  [{id:'generation',label:'Generation'},{id:'type',label:'Type'}].forEach(m=>{
+    const b=document.createElement('button');
+    b.className='mini-btn theme-btn'+(m.id===batchMode?' selected':'');
+    b.textContent=m.label;
+    b.onclick=()=>{ batchMode=m.id; buildBatchModePicker();
+      document.getElementById('batchModeGeneration').style.display=m.id==='generation'?'block':'none';
+      document.getElementById('batchModeType').style.display=m.id==='type'?'block':'none';
+      batchBgOverride=null; buildBatchBgSwatches(); updateBatchPreviewRef();
+    };
+    el.appendChild(b);
+  });
+}
+function buildBatchStylePicker(){
+  const el=document.getElementById('batchStylePicker'); el.innerHTML='';
+  [{id:'official',label:'Standard'},{id:'pixel',label:'Pixel art'}].forEach(s=>{
+    const b=document.createElement('button');
+    b.className='mini-btn theme-btn'+(s.id===batchStyle?' selected':'');
+    b.textContent=s.label;
+    b.onclick=()=>{ batchStyle=s.id; buildBatchStylePicker(); drawBatchPreview(); };
+    el.appendChild(b);
+  });
+}
+function buildBatchThemePicker(){
+  const el=document.getElementById('batchThemePicker'); el.innerHTML='';
+  [{id:'light',label:'Light'},{id:'dark',label:'Dark'}].forEach(t=>{
+    const b=document.createElement('button');
+    b.className='mini-btn theme-btn'+(t.id===batchTheme?' selected':'');
+    b.textContent=t.label;
+    b.onclick=()=>{ batchTheme=t.id; buildBatchThemePicker(); drawBatchPreview(); };
+    el.appendChild(b);
+  });
+}
+function buildBatchFramePicker(){
+  const el=document.getElementById('batchFramePicker'); el.innerHTML='';
+  FRAMES.forEach(f=>{
+    const b=document.createElement('div');
+    b.className='frame-swatch-circle'+(f.id===batchFrame?' selected':'');
+    b.style.background=FRAME_SWATCH_CSS[f.id];
+    b.title=f.label;
+    b.onclick=()=>{ batchFrame=f.id; buildBatchFramePicker(); drawBatchPreview(); };
+    el.appendChild(b);
+  });
+}
+function buildBatchBgSwatches(){
+  const el=document.getElementById('batchBgSwatches'); el.innerHTML='';
+  const presets=[];
+  if(batchMode==='type') presets.push(typeColor(document.getElementById('batchTypeSelect').value));
+  presets.push('#f3f0ed','#e6e6e6','#151515');
+  presets.forEach(color=>{
+    const b=document.createElement('div');
+    b.className='bg-swatch-circle'+(batchBgOverride===color?' selected':'');
+    b.style.background=color;
+    b.onclick=()=>{ batchBgOverride=color; buildBatchBgSwatches(); drawBatchPreview(); };
+    el.appendChild(b);
+  });
+}
+document.getElementById('batchTypeSelect').addEventListener('change',()=>{
+  if(batchMode==='type'){ batchBgOverride=null; buildBatchBgSwatches(); }
+  updateBatchPreviewRef();
+});
+document.getElementById('batchGenSelect').addEventListener('change',()=>{
+  if(batchMode==='generation') updateBatchPreviewRef();
+});
+document.getElementById('batchTypeSelect').innerHTML=ALL_TYPES.map(t=>`<option value="${t}">${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('');
+
+function withBatchStyle(fn){
+  const savedTheme=pokeTheme, savedFrame=selectedFrame;
+  pokeTheme=batchTheme; selectedFrame=batchFrame;
+  try{ return fn(); } finally{ pokeTheme=savedTheme; selectedFrame=savedFrame; }
+}
+function buildBatchCard(basic){
+  const d={
+    name:basic.name, number:basic.id, types:basic.types, stats:basic.stats,
+    sprite: batchStyle==='pixel'?basic.spritePixel:basic.spriteOfficial, evoNames:basic.evoNames||[]
+  };
+  const bgOverride = batchBgOverride || (batchMode==='type' ? typeColor(document.getElementById('batchTypeSelect').value) : null);
+  return {tool:'poke', size:'1x1', pokeData:d, bgOverrideColor:bgOverride, customImage:null, pixelArt: batchStyle==='pixel'};
+}
+async function fetchPokemonBasic(idOrName){
+  const res=await fetch(`https://pokeapi.co/api/v2/pokemon/${idOrName}`);
+  if(!res.ok) throw new Error('not found');
+  const data=await res.json();
+  let evoNames=[];
+  try{
+    const speciesRes=await fetch(data.species.url);
+    const species=await speciesRes.json();
+    const evoRes=await fetch(species.evolution_chain.url);
+    const evo=await evoRes.json();
+    let node=evo.chain;
+    while(node){ evoNames.push(node.species.name); node=node.evolves_to[0]; }
+  }catch(e){}
+  return {
+    id:data.id, name:data.name, isDefault:data.is_default,
+    types:data.types.map(t=>t.type.name),
+    stats:data.stats.map(s=>({name:s.stat.name, value:s.base_stat})),
+    spriteOfficial:data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
+    spritePixel:data.sprites.front_default,
+    evoNames
+  };
+}
+let batchPreviewIndex=0, batchPreviewRef='pikachu';
+async function updateBatchPreviewRef(){
+  try{
+    const list = batchMode==='generation'
+      ? await fetchGenerationList(document.getElementById('batchGenSelect').value)
+      : await fetchTypeList(document.getElementById('batchTypeSelect').value);
+    if(list.length){ batchPreviewRef=list[0].id; drawBatchPreview(); }
+  }catch(e){}
+}
+async function drawBatchPreview(){
+  const canvas=document.getElementById('batchPreviewCanvas');
+  const label=document.getElementById('batchPreviewLabel');
+  let ref;
+  if(batchList.length){
+    if(batchPreviewIndex>=batchList.length) batchPreviewIndex=0;
+    if(batchPreviewIndex<0) batchPreviewIndex=batchList.length-1;
+    ref=batchList[batchPreviewIndex].id;
+  } else {
+    ref=batchPreviewRef;
+  }
+  let basic;
+  try{ basic=await fetchPokemonBasic(ref); }catch(e){ return; }
+  const card=withBatchStyle(()=>buildBatchCard(basic));
+  const col=canvas.closest('.col');
+  const pxPerMM=computeFitPxPerMM(col,63,88,50,40);
+  canvas.width=Math.round(63*pxPerMM); canvas.height=Math.round(88*pxPerMM);
+  canvas.style.borderRadius=(3*pxPerMM)+'px';
+  const ctx=canvas.getContext('2d');
+  card._spriteImg=new Image(); card._spriteImg.crossOrigin='anonymous';
+  card._spriteImg.onload=()=>{ withBatchStyle(()=>drawCardContent(ctx,card,0,0,pxPerMM)); };
+  card._spriteImg.src=card.pokeData.sprite;
+  withBatchStyle(()=>drawCardContent(ctx,card,0,0,pxPerMM));
+  if(label){
+    label.textContent = batchList.length
+      ? `${batchPreviewIndex+1} / ${batchList.length} — ${basic.name}`
+      : `Preview — ${basic.name}`;
+  }
+}
+function changeBatchPreview(delta){
+  if(!batchList.length) return;
+  batchPreviewIndex=(batchPreviewIndex+delta+batchList.length)%batchList.length;
+  drawBatchPreview();
+}
+document.getElementById('batchLoadBtn').addEventListener('click', async ()=>{
+  const btn=document.getElementById('batchLoadBtn');
+  btn.disabled=true; btn.textContent='Loading…';
+  try{
+    batchList = batchMode==='generation'
+      ? await fetchGenerationList(document.getElementById('batchGenSelect').value)
+      : await fetchTypeList(document.getElementById('batchTypeSelect').value);
+  }catch(e){
+    alert('Could not load that selection from PokeAPI.');
+    batchList=[];
+  }
+  document.getElementById('batchCounter').textContent=`${batchList.length} pokémon`;
+  document.getElementById('batchGenerateBtn').disabled = batchList.length===0;
+  btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-magnifying-glass"></i> Load selection & preview';
+  batchPreviewIndex=0;
+  drawBatchPreview();
+});
+document.getElementById('batchGenerateBtn').addEventListener('click', async ()=>{
+  if(!batchList.length) return;
+  const btn=document.getElementById('batchGenerateBtn');
+  const box=document.getElementById('batchProgressBox');
+  const fill=document.getElementById('batchProgressFill');
+  const text=document.getElementById('batchProgressText');
+  btn.disabled=true; box.style.display='block';
+  const zip=new JSZip();
+  const total=batchList.length;
+  let done=0, failed=[];
+  const concurrency=8;
+  let idx=0;
+  async function worker(){
+    while(idx<batchList.length){
+      const item=batchList[idx++];
+      try{
+        const basic=await fetchPokemonBasic(item.id);
+        const card=withBatchStyle(()=>buildBatchCard(basic));
+        await new Promise((resolve)=>{
+          const img=new Image(); img.crossOrigin='anonymous';
+          img.onload=()=>{ card._spriteImg=img; resolve(); };
+          img.onerror=()=>{ card._spriteImg=null; resolve(); };
+          img.src=card.pokeData.sprite;
+        });
+        const canvas=withBatchStyle(()=>renderCardCanvas(card,EXPORT_PXMM));
+        const dataUrl=canvas.toDataURL('image/png');
+        zip.file(`${String(item.id).padStart(4,'0')}_${item.name}.png`, dataUrl.split(',')[1], {base64:true});
+      }catch(e){ failed.push(item); }
+      done++;
+      fill.style.width=Math.round(done/total*100)+'%';
+      text.textContent=`Generating… ${done} / ${total}`+(failed.length?` (${failed.length} failed)`:'');
+    }
+  }
+  await Promise.all(Array.from({length:Math.min(concurrency,batchList.length)},worker));
+  text.textContent=`Done — ${total-failed.length} / ${total} cards generated.`+(failed.length?` ${failed.length} couldn't be fetched.`:'');
+  const blob=await zip.generateAsync({type:'blob'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`BATCHCARD_${todayStr()}_${total}cards.zip`;
+  a.click();
+  btn.disabled=false;
+});
+buildBatchModePicker();
+buildBatchStylePicker();
+buildBatchThemePicker();
+buildBatchFramePicker();
+buildBatchBgSwatches();
+updateBatchPreviewRef();
 </script>
 </body>
 </html>
