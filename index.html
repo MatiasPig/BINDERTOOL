@@ -364,7 +364,11 @@
   .stat-bar-fill{background:#c96b3c; height:100%;}
   .loading-msg{font-size:12px; opacity:0.5; font-style:italic;}
 
-  footer{padding:30px 40px; text-align:center; font-size:12px; opacity:0.4; font-family:var(--font-mono);}
+  footer{padding:30px 40px; text-align:center; font-size:12px; opacity:0.6; font-family:var(--font-mono);}
+  footer > div{margin-bottom:8px;}
+  .footer-credit{display:flex; align-items:center; justify-content:center; gap:10px; opacity:0.8;}
+  .footer-credit a{color:var(--ink); opacity:0.7; font-size:16px; transition:opacity .2s;}
+  .footer-credit a:hover{opacity:1; color:var(--peach);}
 
   @media (max-width:960px){
     .hero{grid-template-columns:1fr;}
@@ -394,12 +398,11 @@
       <p class="lede">Binder Tool was born after gifting my daughter an Eevee plush. I wanted to build a binder with the memories of that moment using the <span class="tooltip-term"><b>Michi Method</b><span class="tooltip-box">The Michi Method is a way to turn several binder pockets into one larger image. Instead of placing a different photo in each pocket, a single photo is divided into perfectly aligned sections that come together across the page.<br><br>You choose the pockets, the image, and the layout. The tool handles the exact measurements, spacing, and print margins needed so every piece fits correctly and nothing important gets cut off.</span></span> — merging pockets to print bigger photos — but the tool didn't exist. So I built it.</p>
       <div class="cta-row">
         <button class="btn btn-peach" onclick="showPage('michi')">Open Michi Tool <i class="fa-solid fa-arrow-right"></i></button>
-        <button class="btn btn-outline" onclick="showPage('poke')">Open PokeCards</button>
+        <button class="btn btn-peach" onclick="showPage('poke')">Open PokeCards <i class="fa-solid fa-arrow-right"></i></button>
       </div>
     </div>
     <div class="binder-wrap">
       <div class="binder-spread" id="binderSpread"></div>
-      <button class="btn-ghost" onclick="shuffleBinder()"><i class="fa-solid fa-shuffle"></i> shuffle layout</button>
     </div>
   </section>
 
@@ -429,7 +432,13 @@
     </div>
   </section>
 
-  <footer>Binder Tool — made with love for collectors · 300dpi print quality</footer>
+  <footer>
+    <div>Binder Tool — made with love for collectors · 300dpi print quality</div>
+    <div class="footer-credit">
+      Developed by Matias.Pig
+      <a href="https://www.instagram.com/the_pig_studio/" target="_blank" rel="noopener noreferrer" title="@the_pig_studio on Instagram"><i class="fa-brands fa-instagram"></i></a>
+    </div>
+  </footer>
 </main>
 
 <!-- ============ MICHI TOOL ============ -->
@@ -502,7 +511,7 @@
   </div>
   <div class="columns">
     <div class="col">
-      <button class="btn btn-outline" id="pokeReplaceImgBtn" style="width:100%;justify-content:center;margin-bottom:8px;"><i class="fa-solid fa-image"></i> Replace image</button>
+      <button class="btn btn-primary" id="pokeReplaceImgBtn" style="width:100%;justify-content:center;margin-bottom:8px;"><i class="fa-solid fa-paperclip"></i> Replace image</button>
       <input type="file" id="pokeReplaceImgInput" accept="image/*" style="display:none;">
       <div class="edit-tools" id="pokeEditTools" style="display:none;margin-bottom:18px;">
         <div class="col-title" style="margin-top:0;">Image adjustments</div>
