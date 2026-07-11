@@ -589,6 +589,8 @@
       </div>
       <div class="suggestions" id="pokeSuggestions"></div>
       <div id="pokeResult"></div>
+      <div class="col-title">Card image</div>
+      <div class="mini-picker" id="pokeStylePicker" style="margin-bottom:18px;"></div>
       <div class="col-title">Card theme</div>
       <div class="mini-picker" id="pokeThemePicker"></div>
       <div class="col-title">Card frame</div>
@@ -911,13 +913,13 @@ const FRAME_FILLS={
   argray:{gradient:true, angle:30, stops:[[0,'#c6c2bf'],[0.25,'#dadbdd'],[0.5,'#c6c2bf'],[0.75,'#dadbdd'],[1,'#c6c2bf']]},
   sirgray:{color:'#919293'},
   blackv:{color:'#151515'},
-  whitepure:{color:'#ffffff'},
+  whitepure:{color:'#f3f0ed'},
   vintageyellow:{color:'#ffe264'}
 };
 const FRAME_SWATCH_CSS={
   none:'repeating-conic-gradient(#fff 0% 25%, #ded9d5 0% 50%) 0 0/8px 8px',
   argray:'linear-gradient(30deg, #c6c2bf 0%, #dadbdd 25%, #c6c2bf 50%, #dadbdd 75%, #c6c2bf 100%)',
-  sirgray:'#919293', blackv:'#151515', whitepure:'#ffffff', vintageyellow:'#ffe264'
+  sirgray:'#919293', blackv:'#151515', whitepure:'#f3f0ed', vintageyellow:'#ffe264'
 };
 function buildFramePickers(){
   ['michiFramePicker','pokeFramePicker'].forEach(id=>{
@@ -965,6 +967,24 @@ function buildThemePicker(){
     b.className='mini-btn theme-btn'+(t.id===pokeTheme?' selected':'');
     b.textContent=t.label;
     b.onclick=()=>{ pokeTheme=t.id; buildThemePicker(); refreshPoke(); };
+    el.appendChild(b);
+  });
+}
+function buildPokeStylePicker(){
+  const el=document.getElementById('pokeStylePicker'); if(!el) return;
+  el.innerHTML='';
+  const card=getCurrentPokeCard();
+  const current=card? !!card.pixelArt : false;
+  [{id:false,label:'Standard'},{id:true,label:'Pixel art'}].forEach(s=>{
+    const b=document.createElement('button');
+    b.className='mini-btn theme-btn'+(current===s.id?' selected':'');
+    b.textContent=s.label;
+    b.onclick=()=>{
+      const c=getCurrentPokeCard(); if(!c) return;
+      c.pixelArt=s.id;
+      buildPokeStylePicker();
+      refreshPoke();
+    };
     el.appendChild(b);
   });
 }
@@ -1887,6 +1907,8 @@ async function fetchPokemonData(q){
     name:data.name, number:data.id,
     types:data.types.map(t=>t.type.name),
     stats:data.stats.map(s=>({name:s.stat.name, value:s.base_stat})),
+    spriteOfficial:data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
+    spritePixel:data.sprites.front_default,
     sprite:data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
     evoNames
   };
@@ -1899,7 +1921,7 @@ async function searchPokemon(){
   try{
     const pokeData=await fetchPokemonData(q);
     renderPokeResult(pokeData);
-    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:null, customImage:null, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
+    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:null, customImage:null, pixelArt:false, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
     pokeSelectedId=null;
     refreshPoke();
   }catch(e){
@@ -1946,7 +1968,7 @@ async function selectSuggestion(name){
   try{
     const pokeData=await fetchPokemonData(name);
     renderPokeResult(pokeData);
-    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:null, customImage:null, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
+    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:null, customImage:null, pixelArt:false, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
     pokeSelectedId=null;
     refreshPoke();
   }catch(e){
@@ -2042,14 +2064,16 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM){
     ctx.fillRect(ox,oy+fadeStart,w,zoneH-fadeStart);
     imgBottom=oy+zoneH;
   } else if(d.sprite){
-    if(!card._spriteImg){
+    const spriteUrl = card.pixelArt ? (d.spritePixel||d.sprite) : (d.spriteOfficial||d.sprite);
+    if(!card._spriteImg || card._spriteImgSrc!==spriteUrl){
       card._spriteImg=new Image(); card._spriteImg.crossOrigin='anonymous';
+      card._spriteImgSrc=spriteUrl;
       card._spriteImg.onload=()=>{
         updateThumb(card.id);
         if(getCurrentPokeCard()===card) drawPokeEditor();
         renderSheet('poke'); renderSheet('michi'); renderSheet('all');
       };
-      card._spriteImg.src=d.sprite;
+      card._spriteImg.src=spriteUrl;
     }
     if(card._spriteImg.complete && card._spriteImg.naturalWidth){
       const baseSz=w*0.66;
@@ -2185,6 +2209,7 @@ function refreshPoke(){
   document.getElementById('pokeCounter').classList.toggle('limit',pokeCards.length>=20);
   renderCardList(pokeCards,'pokeCardList',selectPoke,removePoke,pokeSelectedId);
   drawPokeEditor();
+  buildPokeStylePicker();
   buildPokeBgSwatches();
   renderSheet('poke');
   renderSheet('michi');
