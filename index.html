@@ -259,7 +259,7 @@
   .switch.on{background:var(--peach);}
   .switch.on .switch-knob{left:21px;}
 
-  .coloris-picker{background:var(--bg-alt); border-radius:14px; padding:14px; margin-bottom:18px;}
+  .coloris-picker{background:var(--bg-alt); border-radius:14px; padding:14px; margin-bottom:18px; width:100%; box-sizing:border-box;}
   .coloris-sv{
     position:relative; width:100%; aspect-ratio:1.6/1; border-radius:8px; cursor:crosshair;
     margin-bottom:10px; overflow:hidden;
@@ -2020,6 +2020,19 @@ function removePoke(id){
   if(pokeSelectedId===id) pokeSelectedId=pokeCards.length?pokeCards[pokeCards.length-1].id:null;
   refreshPoke();
 }
+function fillTextWithOutline(ctx,text,x,y,fillColor,outlineColor,outlineWidth){
+  if(outlineColor && outlineWidth>0){
+    ctx.fillStyle=outlineColor;
+    const steps=10;
+    for(let a=0;a<steps;a++){
+      const ang=(a/steps)*Math.PI*2;
+      const ox=Math.cos(ang)*outlineWidth, oy=Math.sin(ang)*outlineWidth;
+      ctx.fillText(text, x+ox, y+oy);
+    }
+  }
+  ctx.fillStyle=fillColor;
+  ctx.fillText(text, x, y);
+}
 function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM){
   const d=card.pokeData;
   const main=card.bgOverrideColor || typeColor(d.types[0]);
@@ -2078,29 +2091,24 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM){
     if(card._spriteImg.complete && card._spriteImg.naturalWidth){
       const baseSz=w*0.66;
       const sz = card.pixelArt ? baseSz*1.25 : baseSz;
-      const imgY=oy+h*0.125;
+      const bandTop=oy+h*0.125;
+      const imgY = card.pixelArt ? bandTop-(sz-baseSz)/2 : bandTop;
       ctx.imageSmoothingEnabled = !card.pixelArt;
       ctx.drawImage(card._spriteImg, ox+(w-sz)/2, imgY, sz, sz);
       ctx.imageSmoothingEnabled = true;
-      imgBottom=imgY+sz;
+      imgBottom=bandTop+baseSz;
     }
   }
 
   /* row 1: name (left) ... number (right) — drawn above the image, colors flip per theme */
   const rowY=oy+h*0.1;
-  const nameFill=isDark?'#151515':'#ffffff';
-  const nameStroke=isDark?'#ffffff':'#151515';
+  const nameFill=isDark?'#f3f0ed':'#151515';
+  const nameStroke=isDark?'#151515':'#f3f0ed';
   ctx.lineJoin='round';
   ctx.textAlign='left'; ctx.font=`700 ${Math.round(0.062*w)}px Inter`;
-  ctx.lineWidth=Math.max(1,w*0.006); ctx.strokeStyle=nameStroke;
-  ctx.strokeText(capitalize(d.name), ox+marginX, rowY);
-  ctx.fillStyle=nameFill;
-  ctx.fillText(capitalize(d.name), ox+marginX, rowY);
+  fillTextWithOutline(ctx, capitalize(d.name), ox+marginX, rowY, nameFill, nameStroke, Math.max(1,w*0.006));
   ctx.textAlign='right'; ctx.font=`700 ${Math.round(0.05*w)}px Inter`;
-  ctx.lineWidth=Math.max(1,w*0.005); ctx.strokeStyle=nameStroke;
-  ctx.strokeText('#'+String(d.number).padStart(3,'0'), ox+w-marginX, rowY);
-  ctx.fillStyle=nameFill;
-  ctx.fillText('#'+String(d.number).padStart(3,'0'), ox+w-marginX, rowY);
+  fillTextWithOutline(ctx, '#'+String(d.number).padStart(3,'0'), ox+w-marginX, rowY, nameFill, nameStroke, Math.max(1,w*0.005));
 
   /* type badges, centered, icon + text */
   const badgeH=h*0.05, badgeGap=w*0.03, iconSize=badgeH*0.82;
@@ -2895,13 +2903,12 @@ function buildBatchBgSwatches(){
   const presets=[];
   if(batchMode==='type') presets.push(typeColor(document.getElementById('batchTypeSelect').value));
   presets.push('#f3f0ed','#e6e6e6','#151515');
-  presets.forEach(color=>{
-    const b=document.createElement('div');
-    b.className='bg-swatch-circle'+(batchBgOverride===color?' selected':'');
-    b.style.background=color;
-    b.onclick=()=>{ batchBgOverride=color; buildBatchBgSwatches(); drawBatchPreview(); };
-    el.appendChild(b);
+  const current=batchBgOverride||presets[0];
+  const picker=createColorPicker(current, presets, (hex)=>{
+    batchBgOverride=hex;
+    drawBatchPreview();
   });
+  el.appendChild(picker);
 }
 document.getElementById('batchTypeSelect').addEventListener('change',()=>{
   if(batchMode==='type'){ batchBgOverride=null; buildBatchBgSwatches(); }
