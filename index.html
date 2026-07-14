@@ -434,11 +434,11 @@
 <nav>
   <div class="logo" onclick="showPage('home')" style="cursor:pointer;">Binder <span>Tool</span></div>
   <div class="nav-links">
-    <button data-page="michi">Michi Tool</button>
+    <button data-page="michi">MICHITOOL</button>
     <button data-page="poke">PokeCards</button>
     <button data-page="mattool" id="navMatTool" style="display:none;">MATTOOL</button>
     <button data-page="batchcard" id="navBatchCard" style="display:none;">BatchCard</button>
-    <button data-page="print" id="navPrint" class="nav-accent" style="display:none;">Print Preview</button>
+    <button data-page="print" id="navPrint" class="nav-accent">Print Preview</button>
   </div>
   <button class="godmode-btn" id="godModeBtn" title="God Mode"><i class="fa-solid fa-lock"></i></button>
 </nav>
@@ -464,7 +464,7 @@
       <h1 class="display">Every card holds<br><em>a real memory.</em></h1>
       <p class="lede">Binder Tool was born after gifting my daughter an Eevee plush. I wanted to build a binder with the memories of that moment using the <span class="tooltip-term"><b>Michi Method</b><span class="tooltip-box">The Michi Method is a way to turn several binder pockets into one larger image. Instead of placing a different photo in each pocket, a single photo is divided into perfectly aligned sections that come together across the page.<br><br>You choose the pockets, the image, and the layout. The tool handles the exact measurements, spacing, and print margins needed so every piece fits correctly and nothing important gets cut off.</span></span> — merging pockets to print bigger photos — but the tool didn't exist. So I built it.</p>
       <div class="cta-row">
-        <button class="btn btn-peach" onclick="showPage('michi')">Open Michi Tool <i class="fa-solid fa-arrow-right"></i></button>
+        <button class="btn btn-peach" onclick="showPage('michi')">Open MICHITOOL <i class="fa-solid fa-arrow-right"></i></button>
         <button class="btn btn-peach" onclick="showPage('poke')">Open PokeCards <i class="fa-solid fa-arrow-right"></i></button>
       </div>
     </div>
@@ -488,7 +488,7 @@
 
   <section class="tools-strip">
     <div class="tool-card">
-      <h3>Michi Tool</h3>
+      <h3>MICHITOOL</h3>
       <p>Upload or paste your own photos, frame each one to the exact card size (63×88mm) and build 1×1, 2×1, 1×2 or 2×2 layouts ready to print.</p>
       <button class="btn btn-primary" style="align-self:flex-start" onclick="showPage('michi')">Create cards <i class="fa-solid fa-arrow-right"></i></button>
     </div>
@@ -511,7 +511,7 @@
 <!-- ============ MICHI TOOL ============ -->
 <main class="page" id="page-michi">
   <div class="app-header">
-    <div class="app-title">Michi Tool</div>
+    <div class="app-title">MICHITOOL</div>
     <div class="app-controls">
       <span class="counter" id="michiCounter">0 / 20</span>
     </div>
@@ -648,7 +648,7 @@
     <div class="columns print-preview-columns" style="grid-template-columns:25% 75%;">
       <div class="col">
         <div class="col-title">All your cards</div>
-        <p style="font-size:12px;opacity:0.6;line-height:1.5;margin:0 0 14px;">Cards from Michi Tool and PokeCards combined on this same sheet.</p>
+        <p style="font-size:12px;opacity:0.6;line-height:1.5;margin:0 0 14px;">Cards from MICHITOOL and PokeCards combined on this same sheet.</p>
         <div class="card-list" id="allCardList"></div>
       </div>
       <div class="col">
@@ -830,6 +830,13 @@
       <div class="col-title">Layout</div>
       <div class="mini-picker" id="batchLayoutPicker" style="margin-bottom:16px;"></div>
 
+      <div class="col-title">Footer</div>
+      <div class="toggle-row" style="margin-bottom:12px;">
+        <span class="toggle-label">Show footer text</span>
+        <button class="switch on" id="batchFooterToggle" role="switch" aria-checked="true"><span class="switch-knob"></span></button>
+      </div>
+      <input type="text" id="batchFooterTextInput" placeholder="Created with BinderTool" style="width:100%;margin-bottom:16px;">
+
       <div class="col-title">Card theme</div>
       <div class="mini-picker" id="batchThemePicker" style="margin-bottom:16px;"></div>
 
@@ -920,14 +927,12 @@ const uid=()=>'c'+(uidCounter++);
 const FRAMES=[
   {id:'none',label:'None'},
   {id:'argray',label:'AR GRAY'},
-  {id:'sirgray',label:'SIR GRAY'},
   {id:'blackv',label:'BLACK V'},
   {id:'whitepure',label:'WHITE PURE'},
   {id:'vintageyellow',label:'VINTAGE YELLOW'}
 ];
 const FRAME_FILLS={
   argray:{gradient:true, angle:30, stops:[[0,'#c6c2bf'],[0.25,'#dadbdd'],[0.5,'#c6c2bf'],[0.75,'#dadbdd'],[1,'#c6c2bf']]},
-  sirgray:{color:'#919293'},
   blackv:{color:'#151515'},
   whitepure:{color:'#f3f0ed'},
   vintageyellow:{color:'#ffe264'}
@@ -935,7 +940,7 @@ const FRAME_FILLS={
 const FRAME_SWATCH_CSS={
   none:'repeating-conic-gradient(#fff 0% 25%, #ded9d5 0% 50%) 0 0/8px 8px',
   argray:'linear-gradient(30deg, #c6c2bf 0%, #dadbdd 25%, #c6c2bf 50%, #dadbdd 75%, #c6c2bf 100%)',
-  sirgray:'#919293', blackv:'#151515', whitepure:'#f3f0ed', vintageyellow:'#ffe264'
+  blackv:'#151515', whitepure:'#f3f0ed', vintageyellow:'#ffe264'
 };
 function buildFramePickers(){
   ['michiFramePicker','pokeFramePicker'].forEach(id=>{
@@ -949,6 +954,17 @@ function buildFramePickers(){
       b.onclick=()=>{ selectedFrame=f.id; buildFramePickers(); refreshMichi(); refreshPoke(); };
       el.appendChild(b);
     });
+    if(id==='pokeFramePicker'){
+      let card=null;
+      try{ card=getCurrentPokeCard(); }catch(e){}
+      const swatchColor=(card && card.pokeData && card.pokeData.types[0]) ? typeColor(card.pokeData.types[0]) : '#999999';
+      const b=document.createElement('div');
+      b.className='frame-swatch-circle'+(selectedFrame==='typecolor'?' selected':'');
+      b.style.background=swatchColor;
+      b.title='TYPE COLOR';
+      b.onclick=()=>{ selectedFrame='typecolor'; buildFramePickers(); refreshMichi(); refreshPoke(); };
+      el.appendChild(b);
+    }
   });
 }
 function roundedRectPath(ctx,x,y,w,h,r){
@@ -970,7 +986,12 @@ function makeAngledGradient(ctx,x,y,w,h,angleDeg,stops){
   stops.forEach(([pos,color])=>grad.addColorStop(pos,color));
   return grad;
 }
-function getFrameFillStyle(ctx,x,y,w,h,frameId){
+function getFrameFillStyle(ctx,x,y,w,h,frameId,card){
+  if(frameId==='typecolor'){
+    if(card && card.typeFrameColorOverride) return card.typeFrameColorOverride;
+    if(card && card.pokeData && card.pokeData.types && card.pokeData.types[0]) return typeColor(card.pokeData.types[0]);
+    return '#999999';
+  }
   const def=FRAME_FILLS[frameId];
   if(!def) return '#000';
   return def.gradient ? makeAngledGradient(ctx,x,y,w,h,def.angle,def.stops) : def.color;
@@ -1042,14 +1063,16 @@ function renderAllList(){
     if(card.tool==='michi'){ michiSelectedId=card.id; showPage('michi'); }
     else { pokeDraft=null; pokeSelectedId=card.id; showPage('poke'); }
   });
+  if(combined.length===0){
+    const empty=document.createElement('div');
+    empty.style.cssText='padding:20px 4px; font-size:13px; opacity:0.6; line-height:1.5; text-align:center;';
+    empty.textContent="No cards yet — add some in MICHITOOL or PokeCards to see them here.";
+    el.appendChild(empty);
+  }
 }
 function checkPrintPreviewUnlock(){
-  if(michiCards.length+pokeCards.length>0){
-    const nav=document.getElementById('navPrint');
-    if(nav.style.display==='none'){ nav.style.display=''; }
-    const counterEl=document.getElementById('allCounter');
-    if(counterEl) counterEl.textContent=`${michiCards.filter(c=>c.image).length+pokeCards.length} / 40`;
-  }
+  const counterEl=document.getElementById('allCounter');
+  if(counterEl) counterEl.textContent=`${michiCards.filter(c=>c.image).length+pokeCards.length} / 40`;
 }
 
 /* ================= NAV ================= */
@@ -1181,7 +1204,7 @@ function drawCardContent(ctx, card, ox, oy, pxPerMM){
   let insetMM=0;
   if(frame && frame!=='none'){
     insetMM=2.5;
-    ctx.fillStyle=getFrameFillStyle(ctx,ox,oy,fullW,fullH,frame);
+    ctx.fillStyle=getFrameFillStyle(ctx,ox,oy,fullW,fullH,frame,card);
     ctx.fillRect(ox,oy,fullW,fullH);
   }
   const innerX=ox+insetMM*pxPerMM, innerY=oy+insetMM*pxPerMM;
@@ -1217,9 +1240,17 @@ function computeEdgeNeighbors(cardsMM, self){
   }
   return {left,right,top,bottom};
 }
+function drawDottedCardOutline(ctx,ox,oy,w,h){
+  ctx.save();
+  ctx.strokeStyle='rgba(21,21,21,0.4)';
+  ctx.lineWidth=1;
+  ctx.setLineDash([4,3]);
+  ctx.strokeRect(ox,oy,w,h);
+  ctx.restore();
+}
 function drawCropMarksCanvas(ctx,ox,oy,w,h,skip){
   skip=skip||{};
-  const gap=0.8*SHEET_PXMM, L=2.2*SHEET_PXMM;
+  const gap=0, L=2.2*SHEET_PXMM;
   ctx.strokeStyle='#282828'; ctx.lineWidth=1;
   const corners=[
     {x:ox,y:oy,sx:-1,sy:-1,hSkip:skip.left,vSkip:skip.top},
@@ -1598,7 +1629,7 @@ function drawEditorEmptyState(ctx, fullW, fullH, pxPerMM, text){
   let insetMM=0;
   if(frame && frame!=='none'){
     insetMM=2.5;
-    ctx.fillStyle=getFrameFillStyle(ctx,0,0,fullW,fullH,frame);
+    ctx.fillStyle=getFrameFillStyle(ctx,0,0,fullW,fullH,frame,undefined);
     ctx.fillRect(0,0,fullW,fullH);
   }
   const innerX=insetMM*pxPerMM, innerY=insetMM*pxPerMM;
@@ -1739,8 +1770,15 @@ function renderSheet(scope){
     const ox=pl.x*SHEET_PXMM, oy=pl.y*SHEET_PXMM, w=pl.w*SHEET_PXMM, h=pl.h*SHEET_PXMM;
     drawCardContent(ctx,pl.card,ox,oy,SHEET_PXMM);
     drawCuttingLinesCanvas(ctx,pl.card.size,SHEET_PXMM,ox,oy,'#9a948d');
+    if(removeSpacing) drawDottedCardOutline(ctx,ox,oy,w,h);
     if(cropMarksEnabled) drawCropMarksCanvas(ctx,ox,oy,w,h,computeEdgeNeighbors(pg.cards,pl));
   });
+  if(scope==='all' && pg.cards.length===0){
+    ctx.fillStyle='rgba(40,40,40,0.4)';
+    ctx.font=`500 ${Math.round(c.width*0.028)}px Inter`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('No cards added yet', c.width/2, c.height/2);
+  }
   wrap.appendChild(c);
   fitSheetCanvasToWrap(c, wrap, page.w/page.h);
   c.style.cursor=pg.cards.length? 'pointer':'default';
@@ -2375,11 +2413,14 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
   }
 
   /* footer credit */
-  ctx.font=`500 ${Math.round(0.027*fullW)}px Inter`;
-  ctx.textAlign='center'; ctx.globalAlpha=0.45; ctx.fillStyle=textColor;
-  const footerY = oy+h*0.985;
-  ctx.fillText('Created with BinderTool', ox+w/2, footerY);
-  ctx.globalAlpha=1;
+  if(footerEnabled){
+    ctx.font=`500 ${Math.round(0.027*fullW)}px Inter`;
+    ctx.textAlign='center'; ctx.globalAlpha=0.45; ctx.fillStyle=textColor;
+    const footerY = oy+h*0.985;
+    const footerLabel = (footerText||'').trim() || 'Created with BinderTool';
+    ctx.fillText(footerLabel, ox+w/2, footerY);
+    ctx.globalAlpha=1;
+  }
 }
 
 function drawPokeEditor(){
@@ -2420,6 +2461,7 @@ function refreshPoke(){
   drawPokeEditor();
   buildPokeStylePicker();
   buildPokeLayoutPicker();
+  buildFramePickers();
   const shinyBtn=document.getElementById('pokeShinyToggle');
   const curCard=getCurrentPokeCard();
   const shinyOn=curCard? !!curCard.shiny : false;
@@ -2594,13 +2636,19 @@ function buildSheetPDFDoc(scope){
       const canvas=renderCardCanvas(pl.card, EXPORT_PXMM);
       const dataUrl=canvas.toDataURL('image/jpeg',0.97);
       doc.addImage(dataUrl,'JPEG',pl.x,pl.y,pl.w,pl.h);
+      if(removeSpacing){
+        doc.setDrawColor(161,161,161); doc.setLineWidth(0.12);
+        doc.setLineDashPattern([0.8,0.6],0);
+        doc.rect(pl.x,pl.y,pl.w,pl.h,'S');
+        doc.setLineDashPattern([],0);
+      }
       if(showCutGuides && (pl.card.size==='1x2' || pl.card.size==='2x2')){
         doc.setDrawColor(154,148,141); doc.setLineWidth(0.15);
         doc.line(pl.x-3, pl.y+88, pl.x+pl.w+3, pl.y+88);
         doc.line(pl.x-3, pl.y+98, pl.x+pl.w+3, pl.y+98);
       }
       if(cropMarksEnabled){
-        const gap=0.8, L=2.2;
+        const gap=0, L=2.2;
         const skip=computeEdgeNeighbors(pg.cards,pl);
         doc.setDrawColor(40,40,40); doc.setLineWidth(0.15);
         const corners=[
@@ -3069,7 +3117,7 @@ function buildBatchModePicker(){
     b.onclick=()=>{ batchMode=m.id; buildBatchModePicker();
       document.getElementById('batchModeGeneration').style.display=m.id==='generation'?'block':'none';
       document.getElementById('batchModeType').style.display=m.id==='type'?'block':'none';
-      batchBgOverride=null; buildBatchBgSwatches(); updateBatchPreviewRef();
+      batchBgOverride=null; buildBatchBgSwatches(); buildBatchFramePicker(); updateBatchPreviewRef();
     };
     el.appendChild(b);
   });
@@ -3101,6 +3149,16 @@ function buildBatchLayoutPicker(){
     el.appendChild(b);
   });
 }
+document.getElementById('batchFooterToggle').addEventListener('click',function(){
+  const on=!this.classList.contains('on');
+  batchFooterEnabled=on;
+  this.classList.toggle('on',on); this.setAttribute('aria-checked',on);
+  drawBatchPreview();
+});
+document.getElementById('batchFooterTextInput').addEventListener('input',function(){
+  batchFooterText=this.value;
+  drawBatchPreview();
+});
 function buildBatchThemePicker(){
   const el=document.getElementById('batchThemePicker'); el.innerHTML='';
   [{id:'light',label:'Light'},{id:'dark',label:'Dark'}].forEach(t=>{
@@ -3121,6 +3179,15 @@ function buildBatchFramePicker(){
     b.onclick=()=>{ batchFrame=f.id; buildBatchFramePicker(); drawBatchPreview(); };
     el.appendChild(b);
   });
+  const typeSwatchColor = batchMode==='type'
+    ? typeColor(document.getElementById('batchTypeSelect').value)
+    : '#999999';
+  const b=document.createElement('div');
+  b.className='frame-swatch-circle'+(batchFrame==='typecolor'?' selected':'');
+  b.style.background=typeSwatchColor;
+  b.title='TYPE COLOR';
+  b.onclick=()=>{ batchFrame='typecolor'; buildBatchFramePicker(); drawBatchPreview(); };
+  el.appendChild(b);
 }
 function buildBatchBgSwatches(){
   const el=document.getElementById('batchBgSwatches'); el.innerHTML='';
@@ -3135,7 +3202,7 @@ function buildBatchBgSwatches(){
   el.appendChild(picker);
 }
 document.getElementById('batchTypeSelect').addEventListener('change',()=>{
-  if(batchMode==='type'){ batchBgOverride=null; buildBatchBgSwatches(); }
+  if(batchMode==='type'){ batchBgOverride=null; buildBatchBgSwatches(); buildBatchFramePicker(); }
   updateBatchPreviewRef();
 });
 document.getElementById('batchGenSelect').addEventListener('change',()=>{
@@ -3144,10 +3211,17 @@ document.getElementById('batchGenSelect').addEventListener('change',()=>{
 document.getElementById('batchTypeSelect').innerHTML=ALL_TYPES.map(t=>`<option value="${t}">${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('');
 
 let batchCardLayout='stats';
+let footerEnabled=true, footerText='';
+let batchFooterEnabled=true, batchFooterText='';
 function withBatchStyle(fn){
   const savedTheme=pokeTheme, savedFrame=selectedFrame, savedLayout=pokeCardLayout;
+  const savedFooterEnabled=footerEnabled, savedFooterText=footerText;
   pokeTheme=batchTheme; selectedFrame=batchFrame; pokeCardLayout=batchCardLayout;
-  try{ return fn(); } finally{ pokeTheme=savedTheme; selectedFrame=savedFrame; pokeCardLayout=savedLayout; }
+  footerEnabled=batchFooterEnabled; footerText=batchFooterText;
+  try{ return fn(); } finally{
+    pokeTheme=savedTheme; selectedFrame=savedFrame; pokeCardLayout=savedLayout;
+    footerEnabled=savedFooterEnabled; footerText=savedFooterText;
+  }
 }
 let batchShiny=false;
 function buildBatchCard(basic){
@@ -3159,7 +3233,8 @@ function buildBatchCard(basic){
     evoChain:basic.evoChain||[], description:basic.description||'', isLegendary:!!basic.isLegendary
   };
   const bgOverride = batchBgOverride || (batchMode==='type' ? typeColor(document.getElementById('batchTypeSelect').value) : null);
-  return {tool:'poke', size:'1x1', pokeData:d, bgOverrideColor:bgOverride, customImage:null, pixelArt: batchStyle==='pixel', shiny: batchShiny};
+  const typeFrameColorOverride = batchMode==='type' ? typeColor(document.getElementById('batchTypeSelect').value) : null;
+  return {tool:'poke', size:'1x1', pokeData:d, bgOverrideColor:bgOverride, typeFrameColorOverride, customImage:null, pixelArt: batchStyle==='pixel', shiny: batchShiny};
 }
 async function fetchPokemonBasic(idOrName){
   const res=await fetch(`https://pokeapi.co/api/v2/pokemon/${idOrName}`);
