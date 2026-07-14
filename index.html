@@ -289,6 +289,12 @@
   }
   .coloris-preset-swatch.selected{box-shadow:0 0 0 2px var(--ink);}
   .mini-picker{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; justify-content:center;}
+  .shiny-btn{
+    width:100%; padding:11px 0; border-radius:10px; border:1.5px solid var(--bg-alt); background:var(--bg);
+    font-family:var(--font-body); font-size:14px; font-weight:600; cursor:pointer; text-align:center;
+    transition:background .2s, border-color .2s, color .2s;
+  }
+  .shiny-btn.active{background:var(--peach); border-color:var(--peach); color:#282828;}
   .theme-btn{flex:1; min-width:0; text-align:center; padding:10px 12px;}
   .mini-btn{
     padding:8px 12px; border-radius:100px; border:1.5px solid var(--bg-alt); background:var(--bg);
@@ -590,7 +596,10 @@
       <div class="suggestions" id="pokeSuggestions"></div>
       <div id="pokeResult"></div>
       <div class="col-title">Card image</div>
-      <div class="mini-picker" id="pokeStylePicker" style="margin-bottom:18px;"></div>
+      <div class="mini-picker" id="pokeStylePicker" style="margin-bottom:12px;"></div>
+      <button class="shiny-btn" id="pokeShinyToggle" style="margin-bottom:18px;">✦ Shiny</button>
+      <div class="col-title">Layout</div>
+      <div class="mini-picker" id="pokeLayoutPicker" style="margin-bottom:18px;"></div>
       <div class="col-title">Card theme</div>
       <div class="mini-picker" id="pokeThemePicker"></div>
       <div class="col-title">Card frame</div>
@@ -815,7 +824,11 @@
       <button class="btn btn-primary" id="batchLoadBtn" style="width:100%;justify-content:center;margin-bottom:20px;"><i class="fa-solid fa-magnifying-glass"></i> Load selection &amp; preview</button>
 
       <div class="col-title">Card image</div>
-      <div class="mini-picker" id="batchStylePicker" style="margin-bottom:16px;"></div>
+      <div class="mini-picker" id="batchStylePicker" style="margin-bottom:12px;"></div>
+      <button class="shiny-btn" id="batchShinyToggle" style="margin-bottom:16px;">✦ Shiny</button>
+
+      <div class="col-title">Layout</div>
+      <div class="mini-picker" id="batchLayoutPicker" style="margin-bottom:16px;"></div>
 
       <div class="col-title">Card theme</div>
       <div class="mini-picker" id="batchThemePicker" style="margin-bottom:16px;"></div>
@@ -871,6 +884,8 @@ const TYPE_ICON_DATA={
   water:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgaWQ9IkxheWVyXzEiIGRhdGEtbmFtZT0iTGF5ZXIgMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjU2IDI1NiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogIzNhOWRlMjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICB9CgogICAgICAuY2xzLTMgewogICAgICAgIGZpbGw6ICMzMDk5ZTE7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxjaXJjbGUgY2xhc3M9ImNscy0zIiBjeD0iMTI4IiBjeT0iMTI4IiByPSIxMjgiLz4KICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xMjguMzUsMjA2LjI0Yy0zNC4yNCwuMTMtNTYuMTQtMzIuMzktNDMuOC02NC43OCw0LjE4LTEwLjk4LDEwLjc4LTIwLjYsMTYuOC0zMC40OSw5LjQzLTE1LjUsMTUuNzEtMzIuMTEsMTkuOTEtNDkuNjMsLjU0LTIuMjUsLjk0LTQuNTgsMS44OC02LjY2LC45My0yLjA3LDIuMTMtNC4yOSw1LjAyLTQuMTcsMi44MywuMTIsMy44NCwyLjQxLDQuODcsNC40NCwuNzQsMS40NSwxLjA5LDMuMTIsMS40MSw0LjczLDQuNDYsMjIuMTIsMTMuOTEsNDIuMDYsMjYuMDQsNjAuOTMsNy43NywxMi4wOCwxNC40NiwyNC41OCwxNC4xMywzOS43NS0uNTcsMjYuNDgtMTkuODIsNDUuNzktNDYuMjcsNDUuODlaIi8+CiAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTI5LjE2LDE5My41MWMtMTMuOC0xLjA1LTI1LjU3LTQuNTMtMzIuOTItMTYuNTMtMS4zNS0yLjItMy4xMy01LjAyLTEuNzEtNy40NCwxLjg4LTMuMjEsNC43My0uNzEsNy4wMywuMDgsMTcuODgsNi4xOSwzNS43LDYuMTcsNTMuNTItLjI3LDIuMDYtLjc1LDQuMzMtMi43Myw2LjM2LS40MywxLjkyLDIuMTgsLjA1LDQuNDEtLjkyLDYuMzktNi41MiwxMy4zOS0xOC44NiwxNi40OS0zMS4zNSwxOC4xOVoiLz4KPC9zdmc+'
 };
 
+/* Named web colors: Lightgrey = lightest UI tone, Midgrey = mid gray, Accent = peach/orange, BlackV = dark tone */
+const COLOR_LIGHTGREY='#f3f0ed', COLOR_MIDGREY='#e6e6e6', COLOR_ACCENT='#fab48a', COLOR_BLACKV='#151515';
 const SIZES = {
   '1x1':{w:63,h:88}, '2x1':{w:136,h:88}, '1x2':{w:63,h:186}, '2x2':{w:136,h:186}
 };
@@ -898,6 +913,7 @@ let michiBgColor='#ffffff';
 let showUnionGuides=true, showCutGuides=true;
 let selectedFrame='none';
 let pokeTheme='light';
+let pokeCardLayout='stats';
 let sheetPage={michi:0, poke:0, all:0};
 let uidCounter=1;
 const uid=()=>'c'+(uidCounter++);
@@ -970,11 +986,12 @@ function buildThemePicker(){
     el.appendChild(b);
   });
 }
+let lastUsedPokeStyle=false;
 function buildPokeStylePicker(){
   const el=document.getElementById('pokeStylePicker'); if(!el) return;
   el.innerHTML='';
   const card=getCurrentPokeCard();
-  const current=card? !!card.pixelArt : false;
+  const current=card? !!card.pixelArt : lastUsedPokeStyle;
   [{id:false,label:'Standard'},{id:true,label:'Pixel art'}].forEach(s=>{
     const b=document.createElement('button');
     b.className='mini-btn theme-btn'+(current===s.id?' selected':'');
@@ -982,9 +999,28 @@ function buildPokeStylePicker(){
     b.onclick=()=>{
       const c=getCurrentPokeCard(); if(!c) return;
       c.pixelArt=s.id;
+      lastUsedPokeStyle=s.id;
       buildPokeStylePicker();
       refreshPoke();
     };
+    el.appendChild(b);
+  });
+}
+document.getElementById('pokeShinyToggle').addEventListener('click',function(){
+  const c=getCurrentPokeCard(); if(!c) return;
+  const on=!this.classList.contains('active');
+  c.shiny=on;
+  this.classList.toggle('active',on);
+  refreshPoke();
+});
+function buildPokeLayoutPicker(){
+  const el=document.getElementById('pokeLayoutPicker'); if(!el) return;
+  el.innerHTML='';
+  [{id:'stats',label:'Stats Card'},{id:'info',label:'Info Card'}].forEach(l=>{
+    const b=document.createElement('button');
+    b.className='mini-btn theme-btn'+(pokeCardLayout===l.id?' selected':'');
+    b.textContent=l.label;
+    b.onclick=()=>{ pokeCardLayout=l.id; buildPokeLayoutPicker(); refreshPoke(); };
     el.appendChild(b);
   });
 }
@@ -1163,7 +1199,7 @@ function drawCardContent(ctx, card, ox, oy, pxPerMM){
       const cy=oy+(fullH-dh)/2 + card.transform.offsetYmm*pxPerMM;
       ctx.drawImage(img,cx,cy,dw,dh);
     }
-  } else { drawPokeCardContent(ctx,card,ox,oy,fullW,fullH,pxPerMM); }
+  } else { drawPokeCardContent(ctx,card,innerX,innerY,innerW,innerH,pxPerMM,fullW,fullH); }
   ctx.restore();
   ctx.restore();
 }
@@ -1890,27 +1926,51 @@ function getTypeIconImg(type){
   }
   return typeIconImgCache[type];
 }
+function extractDescription(species){
+  try{
+    const entries=(species.flavor_text_entries||[]).filter(e=>e.language.name==='en');
+    if(!entries.length) return '';
+    const text=entries[entries.length-1].flavor_text;
+    return text.replace(/[\n\f\r]+/g,' ').replace(/\s+/g,' ').trim();
+  }catch(e){ return ''; }
+}
+function extractEvoChain(evo){
+  const chain=[];
+  let node=evo.chain;
+  while(node){
+    const m=node.species.url.match(/\/(\d+)\/$/);
+    chain.push({name:node.species.name, id:m?parseInt(m[1]):null});
+    node=node.evolves_to[0];
+  }
+  return chain;
+}
 async function fetchPokemonData(q){
   const res=await fetch(`https://pokeapi.co/api/v2/pokemon/${q}`);
   if(!res.ok) throw new Error('not found');
   const data=await res.json();
   const speciesRes=await fetch(data.species.url);
   const species=await speciesRes.json();
-  let evoNames=[];
+  let evoChain=[];
   try{
     const evoRes=await fetch(species.evolution_chain.url);
     const evo=await evoRes.json();
-    let node=evo.chain;
-    while(node){ evoNames.push(node.species.name); node=node.evolves_to[0]; }
+    evoChain=extractEvoChain(evo);
   }catch(e){}
+  const description=extractDescription(species);
+  const isLegendary=!!(species.is_legendary || species.is_mythical);
   return {
     name:data.name, number:data.id,
     types:data.types.map(t=>t.type.name),
     stats:data.stats.map(s=>({name:s.stat.name, value:s.base_stat})),
     spriteOfficial:data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
     spritePixel:data.sprites.front_default,
+    spriteOfficialShiny:(data.sprites.other['official-artwork'].front_shiny) || data.sprites.front_shiny || data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
+    spritePixelShiny:data.sprites.front_shiny || data.sprites.front_default,
     sprite:data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
-    evoNames
+    evoNames:evoChain.map(e=>e.name),
+    evoChain,
+    description,
+    isLegendary
   };
 }
 async function searchPokemon(){
@@ -1921,7 +1981,7 @@ async function searchPokemon(){
   try{
     const pokeData=await fetchPokemonData(q);
     renderPokeResult(pokeData);
-    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:null, customImage:null, pixelArt:false, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
+    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:null, customImage:null, pixelArt:lastUsedPokeStyle, shiny:false, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
     pokeSelectedId=null;
     refreshPoke();
   }catch(e){
@@ -1968,7 +2028,7 @@ async function selectSuggestion(name){
   try{
     const pokeData=await fetchPokemonData(name);
     renderPokeResult(pokeData);
-    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:null, customImage:null, pixelArt:false, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
+    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:null, customImage:null, pixelArt:lastUsedPokeStyle, shiny:false, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
     pokeSelectedId=null;
     refreshPoke();
   }catch(e){
@@ -2020,24 +2080,49 @@ function removePoke(id){
   if(pokeSelectedId===id) pokeSelectedId=pokeCards.length?pokeCards[pokeCards.length-1].id:null;
   refreshPoke();
 }
-function fillTextWithOutline(ctx,text,x,y,fillColor,outlineColor,outlineWidth){
+function fillTextWithOutline(ctx,text,x,y,fillColor,outlineColor,outlineWidth,outlineAlpha,cardOx,cardOy,cardW,cardH){
   if(outlineColor && outlineWidth>0){
-    ctx.fillStyle=outlineColor;
+    const buf=document.createElement('canvas');
+    buf.width=Math.max(1,Math.ceil(cardW)); buf.height=Math.max(1,Math.ceil(cardH));
+    const bctx=buf.getContext('2d');
+    bctx.font=ctx.font; bctx.textAlign=ctx.textAlign; bctx.textBaseline=ctx.textBaseline;
+    bctx.fillStyle=outlineColor;
+    const localX=x-cardOx, localY=y-cardOy;
     const steps=10;
     for(let a=0;a<steps;a++){
       const ang=(a/steps)*Math.PI*2;
-      const ox=Math.cos(ang)*outlineWidth, oy=Math.sin(ang)*outlineWidth;
-      ctx.fillText(text, x+ox, y+oy);
+      const dx=Math.cos(ang)*outlineWidth, dy=Math.sin(ang)*outlineWidth;
+      bctx.fillText(text, localX+dx, localY+dy);
     }
+    ctx.save();
+    ctx.globalAlpha = outlineAlpha!=null ? outlineAlpha : 1;
+    ctx.drawImage(buf,cardOx,cardOy);
+    ctx.restore();
   }
   ctx.fillStyle=fillColor;
   ctx.fillText(text, x, y);
 }
-function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM){
+function wrapCanvasTextTopLeft(ctx,text,x,y,maxWidth,lineHeight,maxLines){
+  const words=text.split(' ');
+  const lines=[]; let cur='';
+  words.forEach(word=>{
+    const test=cur? cur+' '+word : word;
+    if(ctx.measureText(test).width>maxWidth && cur){ lines.push(cur); cur=word; } else cur=test;
+  });
+  if(cur) lines.push(cur);
+  if(maxLines && lines.length>maxLines){
+    lines.length=maxLines;
+    lines[maxLines-1]=lines[maxLines-1].replace(/\s*\S*$/,'')+'…';
+  }
+  lines.forEach((line,i)=>ctx.fillText(line, x, y+i*lineHeight));
+  return lines.length;
+}
+function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
+  fullW=fullW||w; fullH=fullH||h;
   const d=card.pokeData;
   const main=card.bgOverrideColor || typeColor(d.types[0]);
   const isDark=pokeTheme==='dark';
-  const bgColor=isDark?'#282828':'#f3f0ed';
+  const bgColor=isDark?COLOR_BLACKV:COLOR_LIGHTGREY;
   const textColor=isDark?'#f3f0ed':'#282828';
   const barBg=isDark?'#3d3b38':'#ded9d5';
 
@@ -2076,8 +2161,10 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM){
     ctx.fillStyle=fadeGrad;
     ctx.fillRect(ox,oy+fadeStart,w,zoneH-fadeStart);
     imgBottom=oy+zoneH;
-  } else if(d.sprite){
-    const spriteUrl = card.pixelArt ? (d.spritePixel||d.sprite) : (d.spriteOfficial||d.sprite);
+  } else if(d.sprite || d.spriteOfficial){
+    const officialUrl = card.shiny ? (d.spriteOfficialShiny||d.spriteOfficial||d.sprite) : (d.spriteOfficial||d.sprite);
+    const pixelUrl = card.shiny ? (d.spritePixelShiny||d.spritePixel) : d.spritePixel;
+    const spriteUrl = card.pixelArt ? (pixelUrl||d.sprite) : (officialUrl||d.sprite);
     if(!card._spriteImg || card._spriteImgSrc!==spriteUrl){
       card._spriteImg=new Image(); card._spriteImg.crossOrigin='anonymous';
       card._spriteImgSrc=spriteUrl;
@@ -2088,97 +2175,174 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM){
       };
       card._spriteImg.src=spriteUrl;
     }
+    const baseSz=w*0.66;
+    const sz = card.pixelArt ? baseSz*1.25 : baseSz;
+    const bandTop=oy+h*0.055;
+    imgBottom=bandTop+baseSz;
     if(card._spriteImg.complete && card._spriteImg.naturalWidth){
-      const baseSz=w*0.66;
-      const sz = card.pixelArt ? baseSz*1.25 : baseSz;
-      const bandTop=oy+h*0.125;
       const imgY = card.pixelArt ? bandTop-(sz-baseSz)/2 : bandTop;
       ctx.imageSmoothingEnabled = !card.pixelArt;
       ctx.drawImage(card._spriteImg, ox+(w-sz)/2, imgY, sz, sz);
       ctx.imageSmoothingEnabled = true;
-      imgBottom=bandTop+baseSz;
     }
   }
 
-  /* row 1: name (left) ... number (right) — drawn above the image, colors flip per theme */
+  /* type icons stay at top-right, overlaying the image, stacked vertically for multiple types */
   const rowY=oy+h*0.1;
-  const nameFill=isDark?'#f3f0ed':'#151515';
-  const nameStroke=isDark?'#151515':'#f3f0ed';
   ctx.lineJoin='round';
-  ctx.textAlign='left'; ctx.font=`700 ${Math.round(0.062*w)}px Inter`;
-  fillTextWithOutline(ctx, capitalize(d.name), ox+marginX, rowY, nameFill, nameStroke, Math.max(1,w*0.006));
-  ctx.textAlign='right'; ctx.font=`700 ${Math.round(0.05*w)}px Inter`;
-  fillTextWithOutline(ctx, '#'+String(d.number).padStart(3,'0'), ox+w-marginX, rowY, nameFill, nameStroke, Math.max(1,w*0.005));
 
-  /* type badges, centered, icon + text */
-  const badgeH=h*0.05, badgeGap=w*0.03, iconSize=badgeH*0.82;
-  ctx.font=`600 ${Math.round(0.034*w)}px Inter`;
-  const labels=d.types.map(t=>t.toUpperCase());
-  const badgeWidths=labels.map(l=>ctx.measureText(l).width + w*0.055 + iconSize + w*0.02);
-  const totalBadgeW=badgeWidths.reduce((a,b)=>a+b,0)+badgeGap*(labels.length-1);
-  let bx=ox+(w-totalBadgeW)/2;
-  const by=imgBottom+h*0.035;
-  labels.forEach((label,i)=>{
-    const bw=badgeWidths[i];
-    ctx.fillStyle=typeColor(d.types[i]);
-    roundedRectPath(ctx,bx,by,bw,badgeH,badgeH/2); ctx.fill();
-    const iconX=bx+w*0.02, iconY=by+(badgeH-iconSize)/2;
-    const iconImg=getTypeIconImg(d.types[i]);
+  const typeIconSize=fullH*0.062;
+  const iconColumnRight=ox+w-marginX;
+  const iconColumnLeft=iconColumnRight-typeIconSize;
+  const iconGap=fullH*0.012;
+
+  let ty=oy+marginX;
+  const typeIconOutline = isDark ? COLOR_BLACKV : COLOR_LIGHTGREY;
+  d.types.forEach(t=>{
+    const cx=iconColumnLeft+typeIconSize/2, cy=ty+typeIconSize/2;
+    const iconImg=getTypeIconImg(t);
     if(iconImg && iconImg.complete && iconImg.naturalWidth){
       ctx.save();
-      ctx.beginPath(); ctx.arc(iconX+iconSize/2, iconY+iconSize/2, iconSize/2, 0, Math.PI*2); ctx.clip();
-      ctx.drawImage(iconImg, iconX, iconY, iconSize, iconSize);
+      ctx.shadowColor='rgba(0,0,0,0.2)';
+      ctx.shadowBlur=Math.max(1,typeIconSize*0.18);
+      ctx.shadowOffsetY=Math.max(1,typeIconSize*0.09);
+      ctx.drawImage(iconImg, iconColumnLeft, ty, typeIconSize, typeIconSize);
       ctx.restore();
     }
-    ctx.fillStyle='#fff'; ctx.textAlign='left';
-    ctx.fillText(label, iconX+iconSize+w*0.02, by+badgeH*0.68);
-    bx+=bw+badgeGap;
+    ctx.save();
+    ctx.strokeStyle=typeIconOutline; ctx.lineWidth=Math.max(1,fullW*0.004);
+    ctx.beginPath(); ctx.arc(cx,cy,typeIconSize/2-ctx.lineWidth/2,0,Math.PI*2); ctx.stroke();
+    ctx.restore();
+    ty+=typeIconSize+iconGap;
   });
 
-  /* stats: label (left) : bar (centered) : number (right, outside bar) */
-  let statY=by+badgeH+h*0.05;
-  const rowH=h*0.044, barH=h*0.014, barW=w*0.46, barX=ox+(w-barW)/2;
-  ctx.font=`600 ${Math.round(0.034*w)}px Inter`;
-  d.stats.slice(0,4).forEach(s=>{
-    ctx.fillStyle=textColor; ctx.textAlign='left';
-    const label=s.name==='attack'?'ATK':s.name.slice(0,3).toUpperCase();
-    ctx.fillText(label, ox+marginX, statY+barH*1.6);
-    roundedRectPath(ctx,barX,statY,barW,barH,barH/2); ctx.fillStyle=barBg; ctx.fill();
-    roundedRectPath(ctx,barX,statY,barW*Math.min(1,s.value/150),barH,barH/2); ctx.fillStyle=isDark?'#ffffff':'#151515'; ctx.fill();
-    ctx.fillStyle=textColor; ctx.textAlign='right';
-    ctx.fillText(String(s.value), ox+w-marginX, statY+barH*1.6);
-    statY+=rowH;
-  });
+  const layout = card.layout || pokeCardLayout || 'stats';
 
-  if(d.evoNames && d.evoNames.length>1){
-    const fontSize=Math.round(0.034*w);
-    const normalFont=`${fontSize}px Inter`;
-    const boldFont=`700 ${fontSize}px Inter`;
-    const sep=' - ';
-    const segments=d.evoNames.map(n=>capitalize(n));
-    const widths=segments.map(seg=>{
-      ctx.font = seg.toLowerCase()===d.name.toLowerCase() ? boldFont : normalFont;
-      return ctx.measureText(seg).width;
-    });
-    ctx.font=normalFont;
-    const sepWidth=ctx.measureText(sep).width;
-    const totalWidth=widths.reduce((a,b)=>a+b,0)+sepWidth*(segments.length-1);
-    let x=ox+(w-totalWidth)/2;
-    const y=Math.min(oy+h*0.985, statY+h*0.028);
-    ctx.globalAlpha=0.75; ctx.textAlign='left'; ctx.fillStyle=textColor;
-    segments.forEach((seg,i)=>{
-      const isCurrent=seg.toLowerCase()===d.name.toLowerCase();
-      ctx.font=isCurrent?boldFont:normalFont;
-      ctx.fillText(seg, x, y);
-      x+=widths[i];
-      if(i<segments.length-1){
-        ctx.font=normalFont;
-        ctx.fillText(sep, x, y);
-        x+=sepWidth;
-      }
-    });
+  /* Name -------- N.#005, right after the image; separator aligned to the number's text half-height */
+  const headerY=imgBottom+h*0.055;
+  const nameFont2=`700 ${Math.round(0.05*fullW)}px Inter`;
+  const pokedexFont2=`700 ${Math.round(0.03*fullW)}px Inter`;
+  ctx.font=nameFont2;
+  const nameText2=capitalize(d.name);
+  const nameW2=ctx.measureText(nameText2).width;
+  ctx.font=pokedexFont2;
+  const numDigits = d.number>999 ? 4 : 3;
+  const pokedexText2=`N. ${String(d.number).padStart(numDigits,'0')}`;
+  const pokedexW2=ctx.measureText(pokedexText2).width;
+
+  ctx.textAlign='left'; ctx.font=nameFont2; ctx.fillStyle=textColor;
+  ctx.fillText(nameText2, ox+marginX, headerY);
+  ctx.textAlign='right'; ctx.font=pokedexFont2;
+  ctx.fillText(pokedexText2, ox+w-marginX, headerY);
+
+  /* full-width separator below the name/number row, same color as the title text */
+  const underlineY=headerY+h*0.02;
+  ctx.save();
+  ctx.globalAlpha=0.6; ctx.strokeStyle=textColor; ctx.lineWidth=Math.max(1,fullH*0.0022);
+  ctx.beginPath(); ctx.moveTo(ox+marginX, underlineY); ctx.lineTo(ox+w-marginX, underlineY); ctx.stroke();
+  ctx.restore();
+
+  let contentBottom=underlineY+h*0.035;
+
+  /* legendary text, same color as description, right below the separator */
+  if(d.isLegendary){
+    ctx.font=`600 ${Math.round(0.03*fullW)}px Inter`;
+    ctx.fillStyle=textColor; ctx.globalAlpha=0.75; ctx.textAlign='left';
+    ctx.fillText('Legendary.', ox+marginX, contentBottom+Math.round(0.03*fullW));
     ctx.globalAlpha=1;
+    contentBottom+=h*0.045;
   }
+
+  if(layout==='info'){
+    /* description (flavor text) */
+    if(d.description){
+      const descFontSize=Math.round(0.03*fullW);
+      ctx.font=`${descFontSize}px Inter`;
+      ctx.fillStyle=textColor; ctx.globalAlpha=0.75; ctx.textAlign='left';
+      const descLineH=descFontSize*1.42;
+      const linesDrawn=wrapCanvasTextTopLeft(ctx, d.description, ox+marginX, contentBottom+descFontSize, w-marginX*2, descLineH, 4);
+      ctx.globalAlpha=1;
+      contentBottom=contentBottom+descFontSize+linesDrawn*descLineH*0.72;
+    }
+
+    /* evolution line: sprites, CENTERED horizontally, each with its name, small triangles between stages, current in color */
+    if(d.evoChain && d.evoChain.length>1){
+      const evoSize=fullH*0.115, evoGap=fullW*0.06;
+      const totalEvoW=d.evoChain.length*evoSize+(d.evoChain.length-1)*evoGap;
+      let ex=ox+(w-totalEvoW)/2;
+      const evoNameFontPx=Math.round(0.024*fullW);
+      const evoNameGapPx=2*pxPerMM;
+      const evoBlockH=evoSize+evoNameGapPx+evoNameFontPx*1.15;
+      const bottomSafeY=oy+h*0.9;
+      let ey=contentBottom+h*0.045;
+      if(ey+evoBlockH>bottomSafeY) ey=bottomSafeY-evoBlockH;
+      const evoNameBaselineY=ey+evoSize+evoNameGapPx+evoNameFontPx*0.78;
+      if(!card._evoImgs) card._evoImgs={};
+      d.evoChain.forEach((evo,i)=>{
+        if(!evo.id) return;
+        if(!card._evoImgs[evo.id]){
+          const img=new Image(); img.crossOrigin='anonymous';
+          img.onload=()=>{
+            if(getCurrentPokeCard()===card) drawPokeEditor();
+            const batchPage=document.getElementById('page-batchcard');
+            if(batchPage && batchPage.classList.contains('active') && typeof drawBatchPreview==='function') drawBatchPreview();
+            renderSheet('poke'); renderSheet('michi'); renderSheet('all');
+          };
+          img.src=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evo.id}.png`;
+          card._evoImgs[evo.id]=img;
+        }
+        const evoImg=card._evoImgs[evo.id];
+        const isCurrent=evo.name.toLowerCase()===d.name.toLowerCase();
+        if(evoImg.complete && evoImg.naturalWidth){
+          ctx.save();
+          ctx.filter = isCurrent ? 'none' : 'grayscale(100%)';
+          ctx.globalAlpha = isCurrent ? 1 : 0.55;
+          ctx.drawImage(evoImg, ex, ey, evoSize, evoSize);
+          ctx.restore();
+        }
+        ctx.font=`600 ${evoNameFontPx}px Inter`;
+        ctx.fillStyle=textColor; ctx.globalAlpha=isCurrent?1:0.6; ctx.textAlign='center';
+        ctx.fillText(capitalize(evo.name), ex+evoSize/2, evoNameBaselineY);
+        ctx.globalAlpha=1;
+        ex+=evoSize;
+        if(i<d.evoChain.length-1){
+          const arrowCx=ex+evoGap/2, arrowCy=ey+evoSize/2;
+          const triSize=Math.min(evoGap*0.22, evoSize*0.14);
+          ctx.save();
+          ctx.globalAlpha=0.55; ctx.fillStyle=textColor;
+          ctx.beginPath();
+          ctx.moveTo(arrowCx-triSize*0.55, arrowCy-triSize*0.6);
+          ctx.lineTo(arrowCx+triSize*0.65, arrowCy);
+          ctx.lineTo(arrowCx-triSize*0.55, arrowCy+triSize*0.6);
+          ctx.closePath(); ctx.fill();
+          ctx.restore();
+        }
+        ex+=evoGap;
+      });
+    }
+  } else {
+    /* stats: label (left) : bar (centered) : number (right, outside bar) */
+    let statY=contentBottom;
+    const rowH=h*0.044, barH=h*0.014, barW=w*0.46, barX=ox+(w-barW)/2;
+    ctx.font=`600 ${Math.round(0.034*fullW)}px Inter`;
+    d.stats.slice(0,4).forEach(s=>{
+      ctx.fillStyle=textColor; ctx.textAlign='left';
+      const label=s.name==='attack'?'ATK':s.name.slice(0,3).toUpperCase();
+      ctx.fillText(label, ox+marginX, statY+barH*1.6);
+      roundedRectPath(ctx,barX,statY,barW,barH,barH/2); ctx.fillStyle=barBg; ctx.fill();
+      roundedRectPath(ctx,barX,statY,barW*Math.min(1,s.value/150),barH,barH/2); ctx.fillStyle=isDark?COLOR_LIGHTGREY:COLOR_BLACKV; ctx.fill();
+      ctx.fillStyle=textColor; ctx.textAlign='right';
+      ctx.fillText(String(s.value), ox+w-marginX, statY+barH*1.6);
+      statY+=rowH;
+    });
+  }
+
+  /* footer credit */
+  ctx.font=`500 ${Math.round(0.027*fullW)}px Inter`;
+  ctx.textAlign='center'; ctx.globalAlpha=0.45; ctx.fillStyle=textColor;
+  const footerY = oy+h*0.985;
+  ctx.fillText('Created with BinderTool', ox+w/2, footerY);
+  ctx.globalAlpha=1;
 }
 
 function drawPokeEditor(){
@@ -2218,6 +2382,11 @@ function refreshPoke(){
   renderCardList(pokeCards,'pokeCardList',selectPoke,removePoke,pokeSelectedId);
   drawPokeEditor();
   buildPokeStylePicker();
+  buildPokeLayoutPicker();
+  const shinyBtn=document.getElementById('pokeShinyToggle');
+  const curCard=getCurrentPokeCard();
+  const shinyOn=curCard? !!curCard.shiny : false;
+  shinyBtn.classList.toggle('active',shinyOn);
   buildPokeBgSwatches();
   renderSheet('poke');
   renderSheet('michi');
@@ -2877,6 +3046,23 @@ function buildBatchStylePicker(){
     el.appendChild(b);
   });
 }
+document.getElementById('batchShinyToggle').addEventListener('click',function(){
+  const on=!this.classList.contains('active');
+  batchShiny=on;
+  this.classList.toggle('active',on);
+  drawBatchPreview();
+});
+function buildBatchLayoutPicker(){
+  const el=document.getElementById('batchLayoutPicker'); if(!el) return;
+  el.innerHTML='';
+  [{id:'stats',label:'Stats Card'},{id:'info',label:'Info Card'}].forEach(l=>{
+    const b=document.createElement('button');
+    b.className='mini-btn theme-btn'+(batchCardLayout===l.id?' selected':'');
+    b.textContent=l.label;
+    b.onclick=()=>{ batchCardLayout=l.id; buildBatchLayoutPicker(); drawBatchPreview(); };
+    el.appendChild(b);
+  });
+}
 function buildBatchThemePicker(){
   const el=document.getElementById('batchThemePicker'); el.innerHTML='';
   [{id:'light',label:'Light'},{id:'dark',label:'Dark'}].forEach(t=>{
@@ -2919,31 +3105,37 @@ document.getElementById('batchGenSelect').addEventListener('change',()=>{
 });
 document.getElementById('batchTypeSelect').innerHTML=ALL_TYPES.map(t=>`<option value="${t}">${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('');
 
+let batchCardLayout='stats';
 function withBatchStyle(fn){
-  const savedTheme=pokeTheme, savedFrame=selectedFrame;
-  pokeTheme=batchTheme; selectedFrame=batchFrame;
-  try{ return fn(); } finally{ pokeTheme=savedTheme; selectedFrame=savedFrame; }
+  const savedTheme=pokeTheme, savedFrame=selectedFrame, savedLayout=pokeCardLayout;
+  pokeTheme=batchTheme; selectedFrame=batchFrame; pokeCardLayout=batchCardLayout;
+  try{ return fn(); } finally{ pokeTheme=savedTheme; selectedFrame=savedFrame; pokeCardLayout=savedLayout; }
 }
+let batchShiny=false;
 function buildBatchCard(basic){
   const d={
     name:basic.name, number:basic.id, types:basic.types, stats:basic.stats,
-    sprite: batchStyle==='pixel'?basic.spritePixel:basic.spriteOfficial, evoNames:basic.evoNames||[]
+    spriteOfficial:basic.spriteOfficial, spritePixel:basic.spritePixel,
+    spriteOfficialShiny:basic.spriteOfficialShiny, spritePixelShiny:basic.spritePixelShiny,
+    sprite: batchStyle==='pixel'?basic.spritePixel:basic.spriteOfficial, evoNames:basic.evoNames||[],
+    evoChain:basic.evoChain||[], description:basic.description||'', isLegendary:!!basic.isLegendary
   };
   const bgOverride = batchBgOverride || (batchMode==='type' ? typeColor(document.getElementById('batchTypeSelect').value) : null);
-  return {tool:'poke', size:'1x1', pokeData:d, bgOverrideColor:bgOverride, customImage:null, pixelArt: batchStyle==='pixel'};
+  return {tool:'poke', size:'1x1', pokeData:d, bgOverrideColor:bgOverride, customImage:null, pixelArt: batchStyle==='pixel', shiny: batchShiny};
 }
 async function fetchPokemonBasic(idOrName){
   const res=await fetch(`https://pokeapi.co/api/v2/pokemon/${idOrName}`);
   if(!res.ok) throw new Error('not found');
   const data=await res.json();
-  let evoNames=[];
+  let evoChain=[], description='', isLegendary=false;
   try{
     const speciesRes=await fetch(data.species.url);
     const species=await speciesRes.json();
+    description=extractDescription(species);
+    isLegendary=!!(species.is_legendary || species.is_mythical);
     const evoRes=await fetch(species.evolution_chain.url);
     const evo=await evoRes.json();
-    let node=evo.chain;
-    while(node){ evoNames.push(node.species.name); node=node.evolves_to[0]; }
+    evoChain=extractEvoChain(evo);
   }catch(e){}
   return {
     id:data.id, name:data.name, isDefault:data.is_default,
@@ -2951,7 +3143,12 @@ async function fetchPokemonBasic(idOrName){
     stats:data.stats.map(s=>({name:s.stat.name, value:s.base_stat})),
     spriteOfficial:data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
     spritePixel:data.sprites.front_default,
-    evoNames
+    spriteOfficialShiny:(data.sprites.other['official-artwork'].front_shiny) || data.sprites.front_shiny || data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
+    spritePixelShiny:data.sprites.front_shiny || data.sprites.front_default,
+    evoNames:evoChain.map(e=>e.name),
+    evoChain,
+    isLegendary,
+    description
   };
 }
 let batchPreviewIndex=0, batchPreviewRef='pikachu';
@@ -3061,6 +3258,7 @@ buildBatchStylePicker();
 buildBatchThemePicker();
 buildBatchFramePicker();
 buildBatchBgSwatches();
+buildBatchLayoutPicker();
 updateBatchPreviewRef();
 </script>
 </body>
