@@ -946,23 +946,31 @@ function buildFramePickers(){
   ['michiFramePicker','pokeFramePicker'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     el.innerHTML='';
+    let activeCard=null;
+    if(id==='michiFramePicker'){ try{ activeCard=getMichiSelected(); }catch(e){} }
+    else { try{ activeCard=getCurrentPokeCard(); }catch(e){} }
+    const currentFrame = (activeCard && activeCard.frame!==undefined) ? activeCard.frame : selectedFrame;
+    const applyFrame=(frameId)=>{
+      selectedFrame=frameId;
+      if(activeCard) activeCard.frame=frameId;
+      if(id==='michiFramePicker') refreshMichi(); else refreshPoke();
+      buildFramePickers();
+    };
     FRAMES.forEach(f=>{
       const b=document.createElement('div');
-      b.className='frame-swatch-circle'+(f.id===selectedFrame?' selected':'');
+      b.className='frame-swatch-circle'+(f.id===currentFrame?' selected':'');
       b.style.background=FRAME_SWATCH_CSS[f.id];
       b.title=f.label;
-      b.onclick=()=>{ selectedFrame=f.id; buildFramePickers(); refreshMichi(); refreshPoke(); };
+      b.onclick=()=>applyFrame(f.id);
       el.appendChild(b);
     });
     if(id==='pokeFramePicker'){
-      let card=null;
-      try{ card=getCurrentPokeCard(); }catch(e){}
-      const swatchColor=(card && card.pokeData && card.pokeData.types[0]) ? typeColor(card.pokeData.types[0]) : '#999999';
+      const swatchColor=(activeCard && activeCard.pokeData && activeCard.pokeData.types[0]) ? typeColor(activeCard.pokeData.types[0]) : '#999999';
       const b=document.createElement('div');
-      b.className='frame-swatch-circle'+(selectedFrame==='typecolor'?' selected':'');
+      b.className='frame-swatch-circle'+(currentFrame==='typecolor'?' selected':'');
       b.style.background=swatchColor;
       b.title='TYPE COLOR';
-      b.onclick=()=>{ selectedFrame='typecolor'; buildFramePickers(); refreshMichi(); refreshPoke(); };
+      b.onclick=()=>applyFrame('typecolor');
       el.appendChild(b);
     }
   });
@@ -1200,7 +1208,7 @@ function drawCardContent(ctx, card, ox, oy, pxPerMM){
   const fullW=cw*pxPerMM, fullH=ch*pxPerMM;
   ctx.save();
   ctx.beginPath(); ctx.rect(ox,oy,fullW,fullH); ctx.clip();
-  const frame = selectedFrame;
+  const frame = card.frame !== undefined ? card.frame : selectedFrame;
   let insetMM=0;
   if(frame && frame!=='none'){
     insetMM=2.5;
@@ -1509,7 +1517,7 @@ document.getElementById('toggleCutGuidesBtn').classList.add('on');
 
 function createMichiCard(){
   if(michiCards.length>=20) return null;
-  const card={id:uid(), tool:'michi', size:michiSizeChoice, image:null, transform:{zoom:1,offsetXmm:0,offsetYmm:0}};
+  const card={id:uid(), tool:'michi', size:michiSizeChoice, image:null, frame:selectedFrame, transform:{zoom:1,offsetXmm:0,offsetYmm:0}};
   michiCards.push(card);
   michiSelectedId=card.id;
   refreshMichi();
@@ -1809,6 +1817,7 @@ function refreshMichi(){
   document.getElementById('michiCounter').classList.toggle('limit',michiCards.length>=20);
   drawEditor();
   buildBgSwatches();
+  buildFramePickers();
   renderSheet('michi');
   renderSheet('poke');
   renderSheet('all');
@@ -2020,7 +2029,7 @@ async function searchPokemon(){
   try{
     const pokeData=await fetchPokemonData(q);
     renderPokeResult(pokeData);
-    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:lastUsedPokeBgColor, customImage:null, pixelArt:lastUsedPokeStyle, shiny:false, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
+    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:lastUsedPokeBgColor, customImage:null, pixelArt:lastUsedPokeStyle, shiny:false, frame:selectedFrame, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
     pokeSelectedId=null;
     refreshPoke();
   }catch(e){
@@ -2067,7 +2076,7 @@ async function selectSuggestion(name){
   try{
     const pokeData=await fetchPokemonData(name);
     renderPokeResult(pokeData);
-    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:lastUsedPokeBgColor, customImage:null, pixelArt:lastUsedPokeStyle, shiny:false, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
+    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:lastUsedPokeBgColor, customImage:null, pixelArt:lastUsedPokeStyle, shiny:false, frame:selectedFrame, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
     pokeSelectedId=null;
     refreshPoke();
   }catch(e){
