@@ -2224,7 +2224,7 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
   /* Name -------- N.#005, right after the image; separator aligned to the number's text half-height */
   const headerY=imgBottom+h*0.055;
   const nameFont2=`700 ${Math.round(0.05*fullW)}px Inter`;
-  const pokedexFont2=`700 ${Math.round(0.03*fullW)}px Inter`;
+  const pokedexFont2=`700 ${Math.round(0.04*fullW)}px Inter`;
   ctx.font=nameFont2;
   const nameText2=capitalize(d.name);
   const nameW2=ctx.measureText(nameText2).width;
@@ -2259,7 +2259,7 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
   if(layout==='info'){
     /* description (flavor text) */
     if(d.description){
-      const descFontSize=Math.round(0.03*fullW);
+      const descFontSize=Math.round(0.038*fullW);
       ctx.font=`${descFontSize}px Inter`;
       ctx.fillStyle=textColor; ctx.globalAlpha=0.75; ctx.textAlign='left';
       const descLineH=descFontSize*1.42;
@@ -2270,10 +2270,10 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
 
     /* evolution line: sprites, CENTERED horizontally, each with its name, small triangles between stages, current in color */
     if(d.evoChain && d.evoChain.length>1){
-      const evoSize=fullH*0.115, evoGap=fullW*0.06;
+      const evoSize=fullH*0.145, evoGap=fullW*0.065;
       const totalEvoW=d.evoChain.length*evoSize+(d.evoChain.length-1)*evoGap;
       let ex=ox+(w-totalEvoW)/2;
-      const evoNameFontPx=Math.round(0.024*fullW);
+      const evoNameFontPx=Math.round(0.032*fullW);
       const evoNameGapPx=1*pxPerMM;
       const evoBlockH=evoSize+evoNameGapPx+evoNameFontPx*1.1;
       const extraGapPx=(15/POKE_EDITOR_PXMM)*pxPerMM;
@@ -2342,11 +2342,11 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
 
     /* evolution line: names only (no sprites), centered, with small triangles between stages */
     if(d.evoChain && d.evoChain.length>1){
-      const evoNameFontPx=Math.round(0.03*fullW);
+      const evoNameFontPx=Math.round(0.04*fullW);
       ctx.font=`600 ${evoNameFontPx}px Inter`;
       const names=d.evoChain.map(evo=>capitalize(evo.name));
       const nameWidths=names.map(n=>ctx.measureText(n).width);
-      const triGap=fullW*0.035, triSize=fullH*0.012;
+      const triGap=fullW*0.04, triSize=fullH*0.017;
       const totalW=nameWidths.reduce((a,b)=>a+b,0)+(names.length-1)*(triGap*2+triSize);
       const evoY=Math.min(oy+h*0.965, statY+h*0.075+2*pxPerMM);
       let ex=ox+(w-totalW)/2;
