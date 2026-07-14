@@ -2146,23 +2146,25 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
   if(card.customImage){
     const img=card.customImage;
     const t=card.customTransform||{zoom:1,offsetXmm:0,offsetYmm:0};
-    const zoneMM=imgBandH/pxPerMM, fadeStartMM=zoneMM*0.7, cwMM=63;
-    const zoneH=imgBandH;
-    const fadeStart=Math.min(h, fadeStartMM*pxPerMM);
+    const bleedPx=10*pxPerMM;
+    const zoneTop=oy;
+    const zoneH=(imgBandTop-oy)+imgBandH+bleedPx;
+    const zoneMM=zoneH/pxPerMM, cwMM=63;
+    const fadeStart=zoneH*0.72;
     ctx.save();
-    ctx.beginPath(); ctx.rect(ox,imgBandTop,w,zoneH); ctx.clip();
+    ctx.beginPath(); ctx.rect(ox,zoneTop,w,zoneH); ctx.clip();
     const fit=Math.max(cwMM/img.naturalWidth, zoneMM/img.naturalHeight);
     const scaleMMperPX=fit*t.zoom;
     const imgWpx=img.naturalWidth*scaleMMperPX*pxPerMM, imgHpx=img.naturalHeight*scaleMMperPX*pxPerMM;
     const dx=ox+(w-imgWpx)/2 + t.offsetXmm*pxPerMM;
-    const dy=imgBandTop+(zoneH-imgHpx)/2 + t.offsetYmm*pxPerMM;
+    const dy=zoneTop+(zoneH-imgHpx)/2 + t.offsetYmm*pxPerMM;
     ctx.drawImage(img, dx, dy, imgWpx, imgHpx);
     ctx.restore();
-    const fadeGrad=ctx.createLinearGradient(ox,imgBandTop+fadeStart,ox,imgBandTop+zoneH);
+    const fadeGrad=ctx.createLinearGradient(ox,zoneTop+fadeStart,ox,zoneTop+zoneH);
     fadeGrad.addColorStop(0, hexToRgba(bgColor,0));
     fadeGrad.addColorStop(1, bgColor);
     ctx.fillStyle=fadeGrad;
-    ctx.fillRect(ox,imgBandTop+fadeStart,w,zoneH-fadeStart);
+    ctx.fillRect(ox,zoneTop+fadeStart,w,zoneH-fadeStart);
   } else if(d.sprite || d.spriteOfficial){
     const officialUrl = card.shiny ? (d.spriteOfficialShiny||d.spriteOfficial||d.sprite) : (d.spriteOfficial||d.sprite);
     const pixelUrl = card.shiny ? (d.spritePixelShiny||d.spritePixel) : d.spritePixel;
@@ -2272,11 +2274,12 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
       const totalEvoW=d.evoChain.length*evoSize+(d.evoChain.length-1)*evoGap;
       let ex=ox+(w-totalEvoW)/2;
       const evoNameFontPx=Math.round(0.024*fullW);
-      const evoNameGapPx=2*pxPerMM;
-      const evoBlockH=evoSize+evoNameGapPx+evoNameFontPx*1.15;
-      const bottomSafeY=oy+h*0.9;
-      let ey=contentBottom+h*0.075+2*pxPerMM;
-      if(ey+evoBlockH>bottomSafeY) ey=bottomSafeY-evoBlockH;
+      const evoNameGapPx=1*pxPerMM;
+      const evoBlockH=evoSize+evoNameGapPx+evoNameFontPx*1.1;
+      const extraGapPx=(15/POKE_EDITOR_PXMM)*pxPerMM;
+      const bottomSafeY=oy+h*0.955-extraGapPx;
+      const desiredEy=bottomSafeY-evoBlockH;
+      let ey=Math.max(contentBottom+h*0.025, desiredEy);
       const evoNameBaselineY=ey+evoSize+evoNameGapPx+evoNameFontPx*0.78;
       if(!card._evoImgs) card._evoImgs={};
       d.evoChain.forEach((evo,i)=>{
