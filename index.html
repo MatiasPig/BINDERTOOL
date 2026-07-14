@@ -987,6 +987,7 @@ function buildThemePicker(){
   });
 }
 let lastUsedPokeStyle=false;
+let lastUsedPokeBgColor=null;
 function buildPokeStylePicker(){
   const el=document.getElementById('pokeStylePicker'); if(!el) return;
   el.innerHTML='';
@@ -1981,7 +1982,7 @@ async function searchPokemon(){
   try{
     const pokeData=await fetchPokemonData(q);
     renderPokeResult(pokeData);
-    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:null, customImage:null, pixelArt:lastUsedPokeStyle, shiny:false, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
+    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:lastUsedPokeBgColor, customImage:null, pixelArt:lastUsedPokeStyle, shiny:false, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
     pokeSelectedId=null;
     refreshPoke();
   }catch(e){
@@ -2028,7 +2029,7 @@ async function selectSuggestion(name){
   try{
     const pokeData=await fetchPokemonData(name);
     renderPokeResult(pokeData);
-    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:null, customImage:null, pixelArt:lastUsedPokeStyle, shiny:false, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
+    pokeDraft={tool:'poke', size:'1x1', pokeData, bgOverrideColor:lastUsedPokeBgColor, customImage:null, pixelArt:lastUsedPokeStyle, shiny:false, customTransform:{zoom:1,offsetXmm:0,offsetYmm:0}};
     pokeSelectedId=null;
     refreshPoke();
   }catch(e){
@@ -2139,28 +2140,29 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
   const marginX=w*0.1;
 
   /* image: replacement visible up to 5cm with fade to theme color, or default sprite */
-  let imgBottom=oy+h*0.2;
+  const imgBandTop=oy+h*0.055;
+  const imgBandH=w*0.66;
+  let imgBottom=imgBandTop+imgBandH;
   if(card.customImage){
     const img=card.customImage;
     const t=card.customTransform||{zoom:1,offsetXmm:0,offsetYmm:0};
-    const zoneMM=60, fadeStartMM=42, cwMM=63;
-    const zoneH=Math.min(h, zoneMM*pxPerMM);
+    const zoneMM=imgBandH/pxPerMM, fadeStartMM=zoneMM*0.7, cwMM=63;
+    const zoneH=imgBandH;
     const fadeStart=Math.min(h, fadeStartMM*pxPerMM);
     ctx.save();
-    ctx.beginPath(); ctx.rect(ox,oy,w,zoneH); ctx.clip();
+    ctx.beginPath(); ctx.rect(ox,imgBandTop,w,zoneH); ctx.clip();
     const fit=Math.max(cwMM/img.naturalWidth, zoneMM/img.naturalHeight);
     const scaleMMperPX=fit*t.zoom;
     const imgWpx=img.naturalWidth*scaleMMperPX*pxPerMM, imgHpx=img.naturalHeight*scaleMMperPX*pxPerMM;
     const dx=ox+(w-imgWpx)/2 + t.offsetXmm*pxPerMM;
-    const dy=oy+(zoneH-imgHpx)/2 + t.offsetYmm*pxPerMM;
+    const dy=imgBandTop+(zoneH-imgHpx)/2 + t.offsetYmm*pxPerMM;
     ctx.drawImage(img, dx, dy, imgWpx, imgHpx);
     ctx.restore();
-    const fadeGrad=ctx.createLinearGradient(ox,oy+fadeStart,ox,oy+zoneH);
+    const fadeGrad=ctx.createLinearGradient(ox,imgBandTop+fadeStart,ox,imgBandTop+zoneH);
     fadeGrad.addColorStop(0, hexToRgba(bgColor,0));
     fadeGrad.addColorStop(1, bgColor);
     ctx.fillStyle=fadeGrad;
-    ctx.fillRect(ox,oy+fadeStart,w,zoneH-fadeStart);
-    imgBottom=oy+zoneH;
+    ctx.fillRect(ox,imgBandTop+fadeStart,w,zoneH-fadeStart);
   } else if(d.sprite || d.spriteOfficial){
     const officialUrl = card.shiny ? (d.spriteOfficialShiny||d.spriteOfficial||d.sprite) : (d.spriteOfficial||d.sprite);
     const pixelUrl = card.shiny ? (d.spritePixelShiny||d.spritePixel) : d.spritePixel;
@@ -2175,10 +2177,9 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
       };
       card._spriteImg.src=spriteUrl;
     }
-    const baseSz=w*0.66;
+    const baseSz=imgBandH;
     const sz = card.pixelArt ? baseSz*1.25 : baseSz;
-    const bandTop=oy+h*0.055;
-    imgBottom=bandTop+baseSz;
+    const bandTop=imgBandTop;
     if(card._spriteImg.complete && card._spriteImg.naturalWidth){
       const imgY = card.pixelArt ? bandTop-(sz-baseSz)/2 : bandTop;
       ctx.imageSmoothingEnabled = !card.pixelArt;
@@ -2200,19 +2201,19 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
   const typeIconOutline = isDark ? COLOR_BLACKV : COLOR_LIGHTGREY;
   d.types.forEach(t=>{
     const cx=iconColumnLeft+typeIconSize/2, cy=ty+typeIconSize/2;
+    const borderR=typeIconSize/2;
+    const iconR=borderR-Math.max(1,fullW*0.003);
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,0.2)';
+    ctx.shadowBlur=Math.max(1,typeIconSize*0.15);
+    ctx.shadowOffsetY=Math.max(1,typeIconSize*0.07);
+    ctx.fillStyle=typeIconOutline;
+    ctx.beginPath(); ctx.arc(cx,cy,borderR,0,Math.PI*2); ctx.fill();
+    ctx.restore();
     const iconImg=getTypeIconImg(t);
     if(iconImg && iconImg.complete && iconImg.naturalWidth){
-      ctx.save();
-      ctx.shadowColor='rgba(0,0,0,0.2)';
-      ctx.shadowBlur=Math.max(1,typeIconSize*0.18);
-      ctx.shadowOffsetY=Math.max(1,typeIconSize*0.09);
-      ctx.drawImage(iconImg, iconColumnLeft, ty, typeIconSize, typeIconSize);
-      ctx.restore();
+      ctx.drawImage(iconImg, cx-iconR, cy-iconR, iconR*2, iconR*2);
     }
-    ctx.save();
-    ctx.strokeStyle=typeIconOutline; ctx.lineWidth=Math.max(1,fullW*0.004);
-    ctx.beginPath(); ctx.arc(cx,cy,typeIconSize/2-ctx.lineWidth/2,0,Math.PI*2); ctx.stroke();
-    ctx.restore();
     ty+=typeIconSize+iconGap;
   });
 
@@ -2274,7 +2275,7 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
       const evoNameGapPx=2*pxPerMM;
       const evoBlockH=evoSize+evoNameGapPx+evoNameFontPx*1.15;
       const bottomSafeY=oy+h*0.9;
-      let ey=contentBottom+h*0.045;
+      let ey=contentBottom+h*0.075+2*pxPerMM;
       if(ey+evoBlockH>bottomSafeY) ey=bottomSafeY-evoBlockH;
       const evoNameBaselineY=ey+evoSize+evoNameGapPx+evoNameFontPx*0.78;
       if(!card._evoImgs) card._evoImgs={};
@@ -2335,6 +2336,39 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
       ctx.fillText(String(s.value), ox+w-marginX, statY+barH*1.6);
       statY+=rowH;
     });
+
+    /* evolution line: names only (no sprites), centered, with small triangles between stages */
+    if(d.evoChain && d.evoChain.length>1){
+      const evoNameFontPx=Math.round(0.03*fullW);
+      ctx.font=`600 ${evoNameFontPx}px Inter`;
+      const names=d.evoChain.map(evo=>capitalize(evo.name));
+      const nameWidths=names.map(n=>ctx.measureText(n).width);
+      const triGap=fullW*0.035, triSize=fullH*0.012;
+      const totalW=nameWidths.reduce((a,b)=>a+b,0)+(names.length-1)*(triGap*2+triSize);
+      const evoY=Math.min(oy+h*0.965, statY+h*0.075+2*pxPerMM);
+      let ex=ox+(w-totalW)/2;
+      ctx.textAlign='left';
+      d.evoChain.forEach((evo,i)=>{
+        const isCurrent=evo.name.toLowerCase()===d.name.toLowerCase();
+        ctx.fillStyle=textColor; ctx.globalAlpha=isCurrent?1:0.6;
+        ctx.fillText(names[i], ex, evoY);
+        ctx.globalAlpha=1;
+        ex+=nameWidths[i];
+        if(i<d.evoChain.length-1){
+          ex+=triGap;
+          const cy=evoY-evoNameFontPx*0.32;
+          ctx.save();
+          ctx.globalAlpha=0.55; ctx.fillStyle=textColor;
+          ctx.beginPath();
+          ctx.moveTo(ex, cy-triSize*0.6);
+          ctx.lineTo(ex+triSize, cy);
+          ctx.lineTo(ex, cy+triSize*0.6);
+          ctx.closePath(); ctx.fill();
+          ctx.restore();
+          ex+=triSize+triGap;
+        }
+      });
+    }
   }
 
   /* footer credit */
@@ -2414,6 +2448,7 @@ function buildPokeBgSwatches(){
   const currentColor=card.bgOverrideColor || typeColor(d.types[0]);
   const picker=createColorPicker(currentColor, colors, (hex)=>{
     card.bgOverrideColor=hex;
+    lastUsedPokeBgColor=hex;
     renderSheet('poke'); renderSheet('all');
     pectx.clearRect(0,0,pokeEditorCanvas.width,pokeEditorCanvas.height);
     drawCardContent(pectx,card,0,0,POKE_EDITOR_PXMM);
