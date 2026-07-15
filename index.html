@@ -11,7 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
   :root{
-    --bg:#f3f0ed;
+    --bg:#fafafa;
     --bg-alt:#ded9d5;
     --ink:#282828;
     --peach:#fab48a;
@@ -864,6 +864,10 @@
       <div class="editor-wrap" style="height:auto;">
         <canvas id="batchPreviewCanvas" width="1" height="1"></canvas>
       </div>
+
+      <div class="col-title">Batch overview</div>
+      <div class="upscale-caption" id="batchOverviewCaption" style="margin-bottom:14px;"></div>
+      <div id="batchGridOverview" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(90px,1fr)); gap:12px;"></div>
     </div>
   </div>
 </main>
@@ -892,7 +896,7 @@ const TYPE_ICON_DATA={
 };
 
 /* Named web colors: Lightgrey = lightest UI tone, Midgrey = mid gray, Accent = peach/orange, BlackV = dark tone */
-const COLOR_LIGHTGREY='#f3f0ed', COLOR_MIDGREY='#e6e6e6', COLOR_ACCENT='#fab48a', COLOR_BLACKV='#151515';
+const COLOR_LIGHTGREY='#fafafa', COLOR_MIDGREY='#e6e6e6', COLOR_ACCENT='#fab48a', COLOR_BLACKV='#151515';
 const SIZES = {
   '1x1':{w:63,h:88}, '2x1':{w:136,h:88}, '1x2':{w:63,h:186}, '2x2':{w:136,h:186}
 };
@@ -934,13 +938,13 @@ const FRAMES=[
 const FRAME_FILLS={
   argray:{gradient:true, angle:30, stops:[[0,'#c6c2bf'],[0.25,'#dadbdd'],[0.5,'#c6c2bf'],[0.75,'#dadbdd'],[1,'#c6c2bf']]},
   blackv:{color:'#151515'},
-  whitepure:{color:'#f3f0ed'},
+  whitepure:{color:'#fafafa'},
   vintageyellow:{color:'#ffe264'}
 };
 const FRAME_SWATCH_CSS={
   none:'repeating-conic-gradient(#fff 0% 25%, #ded9d5 0% 50%) 0 0/8px 8px',
   argray:'linear-gradient(30deg, #c6c2bf 0%, #dadbdd 25%, #c6c2bf 50%, #dadbdd 75%, #c6c2bf 100%)',
-  blackv:'#151515', whitepure:'#f3f0ed', vintageyellow:'#ffe264'
+  blackv:'#151515', whitepure:'#fafafa', vintageyellow:'#ffe264'
 };
 function buildFramePickers(){
   ['michiFramePicker','pokeFramePicker'].forEach(id=>{
@@ -1362,7 +1366,7 @@ buildSizePicker();
 buildFramePickers();
 buildThemePicker();
 
-const BG_PRESETS=['#ffffff','#151515','#ded9d5','#f3f0ed','#fab48a'];
+const BG_PRESETS=['#ffffff','#151515','#ded9d5','#fafafa','#fab48a'];
 function hexToRgbObj(hex){
   hex=hex.replace('#','');
   if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
@@ -1978,8 +1982,9 @@ function extractDescription(species){
   try{
     const entries=(species.flavor_text_entries||[]).filter(e=>e.language.name==='en');
     if(!entries.length) return '';
-    const text=entries[entries.length-1].flavor_text;
-    return text.replace(/[\n\f\r]+/g,' ').replace(/\s+/g,' ').trim();
+    const cleaned=entries.map(e=>e.flavor_text.replace(/[\n\f\r]+/g,' ').replace(/\s+/g,' ').trim()).filter(t=>t.length>0);
+    if(!cleaned.length) return '';
+    return cleaned.reduce((shortest,cur)=>cur.length<shortest.length?cur:shortest, cleaned[0]);
   }catch(e){ return ''; }
 }
 function extractEvoChain(evo){
@@ -2171,7 +2176,7 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
   const main=card.bgOverrideColor || typeColor(d.types[0]);
   const isDark=pokeTheme==='dark';
   const bgColor=isDark?COLOR_BLACKV:COLOR_LIGHTGREY;
-  const textColor=isDark?'#f3f0ed':'#282828';
+  const textColor=isDark?'#fafafa':'#282828';
   const barBg=isDark?'#3d3b38':'#ded9d5';
 
   /* base background + main color gradient (first 45mm -> transparent), only if there's no replacement image */
@@ -2220,9 +2225,20 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
       card._spriteImg=new Image(); card._spriteImg.crossOrigin='anonymous';
       card._spriteImgSrc=spriteUrl;
       card._spriteImg.onload=()=>{
-        updateThumb(card.id);
-        if(getCurrentPokeCard()===card) drawPokeEditor();
-        renderSheet('poke'); renderSheet('michi'); renderSheet('all');
+        if(card._isBatchPreview){
+          if(card._batchRequestId===batchPreviewRequestId){
+            withBatchStyle(()=>{
+              ctx.save();
+              roundedRectPath(ctx,ox,oy,w,h,0.5*pxPerMM); ctx.clip();
+              drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH);
+              ctx.restore();
+            });
+          }
+        } else {
+          updateThumb(card.id);
+          if(getCurrentPokeCard()===card) drawPokeEditor();
+          renderSheet('poke'); renderSheet('michi'); renderSheet('all');
+        }
       };
       card._spriteImg.src=spriteUrl;
     }
@@ -2321,7 +2337,7 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
       const totalEvoW=d.evoChain.length*evoSize+(d.evoChain.length-1)*evoGap;
       let ex=ox+(w-totalEvoW)/2;
       const evoNameFontPx=Math.round(0.032*fullW);
-      const evoNameGapPx=1*pxPerMM;
+      const evoNameGapPx=0.5*pxPerMM;
       const evoBlockH=evoSize+evoNameGapPx+evoNameFontPx*1.1;
       const extraGapPx=(15/POKE_EDITOR_PXMM)*pxPerMM;
       const bottomSafeY=oy+h*0.955-extraGapPx;
@@ -2334,10 +2350,19 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
         if(!card._evoImgs[evo.id]){
           const img=new Image(); img.crossOrigin='anonymous';
           img.onload=()=>{
-            if(getCurrentPokeCard()===card) drawPokeEditor();
-            const batchPage=document.getElementById('page-batchcard');
-            if(batchPage && batchPage.classList.contains('active') && typeof drawBatchPreview==='function') drawBatchPreview();
-            renderSheet('poke'); renderSheet('michi'); renderSheet('all');
+            if(card._isBatchPreview){
+              if(card._batchRequestId===batchPreviewRequestId){
+                withBatchStyle(()=>{
+                  ctx.save();
+                  roundedRectPath(ctx,ox,oy,w,h,0.5*pxPerMM); ctx.clip();
+                  drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH);
+                  ctx.restore();
+                });
+              }
+            } else {
+              if(getCurrentPokeCard()===card) drawPokeEditor();
+              renderSheet('poke'); renderSheet('michi'); renderSheet('all');
+            }
           };
           img.src=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evo.id}.png`;
           card._evoImgs[evo.id]=img;
@@ -3020,14 +3045,18 @@ function renderMatCanvas(canvas, pxPerMM, showGuides){
           const dw=img.naturalWidth*ratio, dh=img.naturalHeight*ratio;
           const dx=cx+(grid.cellW-dw)/2, dy=cy+(grid.cellH-dh)/2;
           const outlineW=matOutlineColor?Math.max(1, Math.min(dw,dh)*0.015):0;
-          const {canvas:outlinedCanvas, pad:outlinedPad}=buildOutlinedImage(img,dw,dh,matOutlineColor,outlineW,matStyle!=='pixel');
           ctx.save();
           if(shadowOn){
             const shadowOff=Math.max(1, Math.min(innerW,innerH)*0.045);
             ctx.shadowColor='rgba(0,0,0,0.2)';
             ctx.shadowOffsetX=shadowOff; ctx.shadowOffsetY=shadowOff; ctx.shadowBlur=0;
           }
-          ctx.drawImage(outlinedCanvas, dx-outlinedPad, dy-outlinedPad);
+          if(matOutlineColor){
+            const {canvas:outlinedCanvas, pad:outlinedPad}=buildOutlinedImage(img,dw,dh,matOutlineColor,outlineW,matStyle!=='pixel');
+            ctx.drawImage(outlinedCanvas, dx-outlinedPad, dy-outlinedPad);
+          } else {
+            ctx.drawImage(img, dx, dy, dw, dh);
+          }
           ctx.restore();
           ctx.imageSmoothingEnabled=true;
         }
@@ -3075,7 +3104,12 @@ function renderMatCanvas(canvas, pxPerMM, showGuides){
   }
   document.getElementById('matGridInfo').textContent=gridInfoText;
 }
+let _matPreviewRAF=null;
 function drawMatPreview(){
+  if(_matPreviewRAF) return;
+  _matPreviewRAF=requestAnimationFrame(()=>{ _matPreviewRAF=null; drawMatPreviewImmediate(); });
+}
+function drawMatPreviewImmediate(){
   const canvas=document.getElementById('matPreviewCanvas');
   const wrap=document.getElementById('matPreviewWrap');
   const dpi=Number(document.getElementById('matDpi').value)||300;
@@ -3202,7 +3236,7 @@ function buildBatchBgSwatches(){
   const el=document.getElementById('batchBgSwatches'); el.innerHTML='';
   const presets=[];
   if(batchMode==='type') presets.push(typeColor(document.getElementById('batchTypeSelect').value));
-  presets.push('#f3f0ed','#e6e6e6','#151515');
+  presets.push('#fafafa','#e6e6e6','#151515');
   const current=batchBgOverride||presets[0];
   const picker=createColorPicker(current, presets, (hex)=>{
     batchBgOverride=hex;
@@ -3243,7 +3277,7 @@ function buildBatchCard(basic){
   };
   const bgOverride = batchBgOverride || (batchMode==='type' ? typeColor(document.getElementById('batchTypeSelect').value) : null);
   const typeFrameColorOverride = batchMode==='type' ? typeColor(document.getElementById('batchTypeSelect').value) : null;
-  return {tool:'poke', size:'1x1', pokeData:d, bgOverrideColor:bgOverride, typeFrameColorOverride, customImage:null, pixelArt: batchStyle==='pixel', shiny: batchShiny};
+  return {tool:'poke', size:'1x1', pokeData:d, bgOverrideColor:bgOverride, typeFrameColorOverride, customImage:null, pixelArt: batchStyle==='pixel', shiny: batchShiny, _isBatchPreview:true};
 }
 async function fetchPokemonBasic(idOrName){
   const res=await fetch(`https://pokeapi.co/api/v2/pokemon/${idOrName}`);
@@ -3282,7 +3316,53 @@ async function updateBatchPreviewRef(){
     if(list.length){ batchPreviewRef=list[0].id; drawBatchPreview(); }
   }catch(e){}
 }
+let batchPreviewRequestId=0;
+let batchGridRequestId=0;
+async function drawBatchGridOverview(){
+  const grid=document.getElementById('batchGridOverview');
+  const caption=document.getElementById('batchOverviewCaption');
+  if(!grid) return;
+  const myRequestId=++batchGridRequestId;
+  grid.innerHTML='';
+  if(!batchList.length){
+    if(caption) caption.textContent='Load a selection to see a quick overview here.';
+    return;
+  }
+  const showCount=Math.min(9, batchList.length);
+  if(caption) caption.textContent=`Showing ${showCount} of ${batchList.length} cards.`;
+  const thumbPxPerMM=3.4;
+  for(let i=0;i<showCount;i++){
+    const item=batchList[i];
+    let basic;
+    try{ basic=await fetchPokemonBasic(item.id); }catch(e){ continue; }
+    if(myRequestId!==batchGridRequestId) return;
+    const card=withBatchStyle(()=>buildBatchCard(basic));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.round(63*thumbPxPerMM); canvas.height=Math.round(88*thumbPxPerMM);
+    canvas.style.width='100%'; canvas.style.height='auto';
+    canvas.style.borderRadius=(3*thumbPxPerMM)+'px';
+    canvas.style.boxShadow='0 8px 20px -10px rgba(40,40,40,0.4)';
+    canvas.style.cursor='pointer';
+    canvas.title=`Show ${basic.name} in the main preview`;
+    const thumbIndex=i;
+    canvas.addEventListener('click',()=>{
+      batchPreviewIndex=thumbIndex;
+      drawBatchPreview();
+    });
+    const ctx=canvas.getContext('2d');
+    withBatchStyle(()=>drawCardContent(ctx,card,0,0,thumbPxPerMM));
+    grid.appendChild(canvas);
+  }
+  if(myRequestId!==batchGridRequestId) return;
+  if(batchList.length>9){
+    const msg=document.createElement('div');
+    msg.style.cssText='grid-column:1/-1; font-size:12.5px; opacity:0.6; text-align:center; padding:14px 8px;';
+    msg.textContent=`The rest of the cards (${batchList.length-9} more) will appear when exported.`;
+    grid.appendChild(msg);
+  }
+}
 async function drawBatchPreview(){
+  const myRequestId=++batchPreviewRequestId;
   const canvas=document.getElementById('batchPreviewCanvas');
   const label=document.getElementById('batchPreviewLabel');
   let ref;
@@ -3295,22 +3375,22 @@ async function drawBatchPreview(){
   }
   let basic;
   try{ basic=await fetchPokemonBasic(ref); }catch(e){ return; }
+  if(myRequestId!==batchPreviewRequestId) return;
   const card=withBatchStyle(()=>buildBatchCard(basic));
+  card._batchRequestId=myRequestId;
   const col=canvas.closest('.col');
   const pxPerMM=computeFitPxPerMM(col,63,88,50,40);
   canvas.width=Math.round(63*pxPerMM); canvas.height=Math.round(88*pxPerMM);
+  canvas.style.width=canvas.width+'px'; canvas.style.height=canvas.height+'px';
   canvas.style.borderRadius=(3*pxPerMM)+'px';
   const ctx=canvas.getContext('2d');
-  card._spriteImg=new Image(); card._spriteImg.crossOrigin='anonymous';
-  card._spriteImg.onload=()=>{ withBatchStyle(()=>drawCardContent(ctx,card,0,0,pxPerMM)); };
-  card._spriteImg.src=card.pokeData.sprite;
   withBatchStyle(()=>drawCardContent(ctx,card,0,0,pxPerMM));
   if(label){
     label.textContent = batchList.length
       ? `${batchPreviewIndex+1} / ${batchList.length} — ${basic.name}`
       : `Preview — ${basic.name}`;
   }
-}
+  }
 function changeBatchPreview(delta){
   if(!batchList.length) return;
   batchPreviewIndex=(batchPreviewIndex+delta+batchList.length)%batchList.length;
@@ -3332,6 +3412,7 @@ document.getElementById('batchLoadBtn').addEventListener('click', async ()=>{
   btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-magnifying-glass"></i> Load selection & preview';
   batchPreviewIndex=0;
   drawBatchPreview();
+  drawBatchGridOverview();
 });
 document.getElementById('batchGenerateBtn').addEventListener('click', async ()=>{
   if(!batchList.length) return;
