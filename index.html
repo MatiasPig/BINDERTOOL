@@ -2337,9 +2337,9 @@ function drawPokeCardContent(ctx,card,ox,oy,w,h,pxPerMM,fullW,fullH){
       const totalEvoW=d.evoChain.length*evoSize+(d.evoChain.length-1)*evoGap;
       let ex=ox+(w-totalEvoW)/2;
       const evoNameFontPx=Math.round(0.032*fullW);
-      const evoNameGapPx=0.5*pxPerMM;
+      const evoNameGapPx=0.2*pxPerMM;
       const evoBlockH=evoSize+evoNameGapPx+evoNameFontPx*1.1;
-      const extraGapPx=(15/POKE_EDITOR_PXMM)*pxPerMM;
+      const extraGapPx=(30/POKE_EDITOR_PXMM)*pxPerMM;
       const bottomSafeY=oy+h*0.955-extraGapPx;
       const desiredEy=bottomSafeY-evoBlockH;
       let ey=Math.max(contentBottom+h*0.025, desiredEy);
